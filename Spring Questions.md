@@ -1,5 +1,5 @@
 ## Q.1: What is Dependency Injection (DI) in Spring?
-**Answer:** Dependency Injection lets the container create and supply an object's dependencies, so classes focus on behavior rather than wiring. This improves testability (mocking), maintainability (loose coupling), and reusability. In Spring, the `ApplicationContext` resolves and provides beans based on type and qualifiers.
+Dependency Injection (DI) is a software design pattern where an object's dependencies (other objects it needs to function) are provided to it from an external source, rather than the object creating them itself. This promotes "Inversion of Control," freeing a class from the responsibility of creating its own dependencies, which leads to more modular, reusable, and testable code. Dependencies are typically "injected" through constructors, setter methods, or interfaces.
 
 **Example:** Constructor injection with multiple implementations disambiguated via `@Qualifier`.
 ```java
@@ -19,7 +19,13 @@ class AlertService {
 ```
 
 ## Q.2: What is Inversion of Control (IoC)?
-**Answer:** IoC means the framework takes over control of creating and managing objects. Instead of your code `new`-ing dependencies, Spring builds the object graph and injects collaborators. This enables cross-cutting services (AOP, transactions) and lifecycle management.
+**Inversion of Control (IoC)** is a software design principle where an external framework or container takes over the responsibility of managing the program's flow and dependencies, rather than the application code itself controlling these aspects. Instead of your code directly creating and managing objects or deciding when to call other components, the IoC container calls your code when it's needed. This approach leads to more modular, flexible, and testable code by decoupling components and reducing dependencies. 
+
+**Traditional Approach:**
+Your code is in charge. It creates objects, calls functions, and orchestrates the entire application flow. Think of it like you going to the kitchen to get ingredients and cook your own meal.
+
+**IoC Approach:**
+The framework or container takes the lead. You write the individual pieces of functionality (like a cooking instruction or a meal recipe), and the framework decides when to invoke them and how to connect them together. This is often called the "Hollywood Principle": "Don't call us, we'll call you".
 
 **Example:** Retrieving beans from the IoC container.
 ```java
@@ -29,22 +35,40 @@ try (var ctx = new AnnotationConfigApplicationContext(AppConfig.class)) {
 }
 ```
 
-## Q.3: Bean vs Component in Spring?
-**Answer:** Use `@Component` (and stereotypes like `@Service`, `@Repository`) to have Spring discover classes via component scanning. Use `@Bean` within a `@Configuration` class to register bean instances produced by factory methods. Prefer `@Component` for your own classes; use `@Bean` for third-party objects or when you need explicit construction logic.
+## Q.3: `@Bean` vs `@Component` in Spring?
 
-**Example:** Mixing both approaches.
-```java
-@Configuration
-class MailConfig {
-  @Bean JavaMailSender mailSender() { return new JavaMailSenderImpl(); }
-}
+Both `@Bean` and `@Component` are used to create beans in the Spring container, but they differ in how they are applied:
 
-@Service // discovered via @ComponentScan
-class MailService { MailService(JavaMailSender sender) { /*...*/ } }
-```
+1. **@Component**
+
+   * Applied on a **class**.
+   * The class is discovered automatically during component scanning (`@ComponentScan`).
+   * Best suited when you control the source code and can annotate it.
+   * Example: `@Component`, `@Service`, `@Repository`, `@Controller`.
+
+2. **@Bean**
+
+   * Applied on a **method inside a `@Configuration` class**.
+   * The method’s return object is registered as a Spring bean.
+   * Useful when you need **explicit control** over bean creation — e.g., setting constructor arguments, calling factory methods, or working with **third-party classes** where you cannot put `@Component`.
+
+**In short:**
+
+* `@Component` → automatic bean registration via classpath scanning.
+* `@Bean` → manual, explicit bean definition inside a configuration class.
+
+---
+
+👉 If an interviewer asks follow-up:
+
+* Say that `@Component` is preferred for your own classes.
+* Use `@Bean` when integrating **legacy code or external libraries** that you can’t annotate.
+
+---
+
 
 ## Q.4: Constructor vs Setter injection?
-**Answer:** Prefer constructor injection for required dependencies and immutability, making objects always valid. Use setter injection for optional or reconfigurable dependencies. Constructor injection is friendlier for tests and prevents circular dependencies from being silently tolerated.
+Prefer constructor injection for required dependencies and immutability, making objects always valid. Use setter injection for optional or reconfigurable dependencies. Constructor injection is friendlier for tests and prevents circular dependencies from being silently tolerated.
 
 **Example:** Required vs optional dependency.
 ```java
@@ -59,20 +83,60 @@ class ReportService {
 ```
 
 ## Q.5: What are common bean scopes?
-**Answer:** `singleton` (one instance per container), `prototype` (new instance on each request), and web scopes `request`, `session`, `application`. Use scoped proxies (`proxyMode = TARGET_CLASS`) when injecting web-scoped beans into singletons.
+`@Scope` Specifies the scope of a bean (singleton, prototype, request, session, etc.).
 
-**Example:** Request-scoped bean used in a singleton.
+Spring supports the following bean scopes:
+
+1. **`singleton`** (default):
+    - A single shared instance of the bean is created and used throughout the Spring IoC container. This is the default scope if no scope is specified.
+    - Every request for this bean will return the same instance.
+2. **`prototype`**:
+    - A new instance of the bean is created each time it is requested from the Spring container.
+    - This scope is suitable for beans that need to be stateless or have a short lifecycle.
+3. **`request`** (Web applications only):
+    - A new instance is created for each HTTP request.
+    - The bean is only available during the lifecycle of the HTTP request and is discarded after the request is completed.
+4. **`session`** (Web applications only):
+    - A new instance is created for each HTTP session.
+    - The bean is tied to the HTTP session and remains active for the duration of that session.
+5. **`application`** (Web applications only):
+    - A single instance of the bean is created for the entire ServletContext (the entire web application).
+    - The bean is shared across all HTTP requests and sessions in the application.
+6. **`websocket`** (Web applications only):
+    - A new instance is created for each WebSocket connection.
+    - The bean is tied to the lifecycle of a WebSocket connection and is discarded once the connection is closed.
+
+**Example:**
 ```java
 @Component
-@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
-class RequestContext { String requestId = UUID.randomUUID().toString(); }
-
-@Service
-class AuditService { AuditService(RequestContext ctx) { /* safe via proxy */ } }
+@Scope("prototype")
+class PrototypeBean {}
 ```
 
-## Q.6: Describe the bean lifecycle.
-**Answer:** Spring instantiates the bean, injects dependencies, runs initialization callbacks (`@PostConstruct` or `InitializingBean.afterPropertiesSet`), then the bean is ready for use. On context shutdown, destruction callbacks (`@PreDestroy` or `DisposableBean.destroy`) run. For `prototype` scope, destruction isn’t managed.
+---
+
+## Q.6: What is `ServletContext`?
+`ServletContext` is a standard Java EE interface that represents the web application itself within the servlet container (e.g., Tomcat, Jetty). It provides a way for servlets and other components within the same web application to communicate with the container and share information.
+
+**Application-wide Scope:** There is only one ServletContext object per web application. This means any information stored as attributes within the ServletContext is accessible to all servlets, JSPs, and other components within that specific web application. This makes it ideal for sharing application-level configuration or resources that are common to all parts of the application
+
+## Q.7: what is `servlet` in java?
+A **Java Servlet** is a server-side Java program that extends the capabilities of a web server to handle client requests and generate dynamic web content. Servlets are a core component of Java Enterprise Edition (Java EE), now known as Jakarta EE, and are primarily used for building dynamic web applications.
+
+
+## Q.8: Describe the bean lifecycle.
+The key stages of a Spring bean's lifecycle are:
+
+* **Instantiation:** The Spring container creates an instance of the bean class. This involves reading bean definitions (from XML, Java configuration, or annotations) and using constructors or factory methods to create the object. 
+* **Dependency Injection:** After instantiation, the Spring container injects any required dependencies into the bean. This can occur through constructor injection, setter injection, or field injection.
+* **Initialization:** Once the bean is instantiated and its dependencies are set, Spring performs initialization. This can involve:
+    * Calling methods annotated with `@PostConstruct`.
+    * Invoking the afterPropertiesSet() method if the bean implements the InitializingBean interface.
+    * Calling a custom init-method specified in the bean definition.
+* **Use:** The fully initialized bean is now ready for use within the application. It can be retrieved from the Spring context and interact with other components. 
+* **Destruction:** When the Spring container is shut down or the bean is no longer needed (e.g., for a request-scoped or session-scoped bean), Spring calls destruction methods to release resources or perform cleanup tasks. This can involve:
+Calling methods annotated with `@PreDestroy`.
+
 
 **Example:** Initialization and cleanup hooks.
 ```java
@@ -83,17 +147,17 @@ class CacheManager {
 }
 ```
 
-## Q.7: What is `ApplicationContext` vs `BeanFactory`?
-**Answer:**  `ApplicationContext` and `BeanFactory` are both interfaces in the Spring Framework that act as an IoC (Inversion of Control) container for managing application components. However, they have some differences in their functionalities:
+## Q.9: What is `ApplicationContext` vs `BeanFactory`?
+ `ApplicationContext` and `BeanFactory` are both interfaces in the Spring Framework that act as an IoC (Inversion of Control) container for managing application components. However, they have some differences in their functionalities:
 
-1. BeanFactory Interface: This is the base interface of the Spring container with minimal functionality. It allows you to look up and instantiate beans by their name using a simple getBean method. It does not offer many additional features like autowiring, message sources, event publishers, or support for loading configuration files.
+1. **BeanFactory Interface**: This is the base interface of the Spring container with minimal functionality. It allows you to look up and instantiate beans by their name using a simple getBean method. It does not offer many additional features like autowiring, message sources, event publishers, or support for loading configuration files.
 
-2. ApplicationContext Interface: This interface extends the BeanFactory interface and offers more advanced functionalities. As mentioned earlier, it supports dependencies between beans (autowiring), message source for internationalization, event publishing and listening mechanisms, loading application-specific configuration properties, and integration with other Spring modules like Transaction Management, MVC, JPA, etc.
+2. **ApplicationContext Interface**: This interface extends the BeanFactory interface and offers more advanced functionalities. As mentioned earlier, it supports dependencies between beans (autowiring), message source for internationalization, event publishing and listening mechanisms, loading application-specific configuration properties, and integration with other Spring modules like Transaction Management, MVC, JPA, etc.
 
 In practice, you should use `ApplicationContext` instead of `BeanFactory` whenever possible due to the extra features it provides. For a simple application or when performance is crucial, you can stick with `BeanFactory`. But in most cases, using an `ApplicationContext` will simplify your code and make your applications more maintainable.
 
-## Q.8: What does `@Primary` do?
-**Answer:** Marks a bean as the default candidate when multiple beans of the same type exist and no `@Qualifier` is provided. It’s a tie-breaker, not a replacement for explicit `@Qualifier` in complex graphs.
+## Q.10: What does `@Primary` do?
+Marks a bean as the default candidate when multiple beans of the same type exist and no `@Qualifier` is provided. It’s a tie-breaker, not a replacement for explicit `@Qualifier` in complex graphs.
 
 **Example:**
 ```java
@@ -101,16 +165,16 @@ In practice, you should use `ApplicationContext` instead of `BeanFactory` whenev
 @Bean Notifier sms() { return new SmsNotifier(); }
 ```
 
-## Q.9: When do you need `@Qualifier`?
-**Answer:** Whenever multiple beans of the same type exist and your injection point must select a specific one. Combine with `@Primary` thoughtfully.
+## Q.11: When do you need `@Qualifier`?
+Whenever multiple beans of the same type exist and your injection point must select a specific one. Combine with `@Primary` thoughtfully.
 
 **Example:**
 ```java
 public PaymentService(@Qualifier("stripeGateway") PaymentGateway gateway) { /*...*/ }
 ```
 
-## Q.10: What is auto-configuration in Spring Boot?
-**Answer:**  Auto-configuration in Spring Boot is a feature that automatically configures common Spring components based on the presence of certain artifacts on your classpath or by analyzing your application's metadata such as annotations and properties. This helps simplify the configuration process, reducing the need for explicit bean definitions and XML configurations.
+## Q.12: What is auto-configuration in Spring Boot?
+ Auto-configuration in Spring Boot is a feature that automatically configures common Spring components based on the presence of certain artifacts on your classpath or by analyzing your application's metadata such as annotations and properties. This helps simplify the configuration process, reducing the need for explicit bean definitions and XML configurations.
 
 Here are some key aspects of auto-configuration in Spring Boot:
 
@@ -122,18 +186,17 @@ Here are some key aspects of auto-configuration in Spring Boot:
 
 Auto-configuration in Spring Boot makes it easier and faster to set up a basic working environment, enabling you to focus more on your application's business logic rather than the configuration details. However, you can still provide your own custom configurations if needed or overwrite auto-configured components by defining your own bean definitions or properties.
 
-## Q.11: What are Spring Boot starters?
-**Answer:** Spring Boot Starters are special Maven or Gradle dependency artifacts that help you quickly bootstrap a new Spring Boot application with the minimum required dependencies for specific functionality. They act as a starting point for your project and simplify the configuration process by providing a pre-configured set of related libraries and dependencies.
+## Q.13: What are Spring Boot starters?
+Spring Boot Starters are special Maven or Gradle dependency artifacts that help you quickly bootstrap a new Spring Boot application with the minimum required dependencies for specific functionality. They act as a starting point for your project and simplify the configuration process by providing a pre-configured set of related libraries and dependencies.
 Some examples are: `spring-boot-starter-web`, `spring-boot-starter-data-jpa`, `spring-boot-starter-security`
 
 
-## Q.12: Purpose of `@SpringBootApplication`?
-**Answer:**  The `@SpringBootApplication` annotation is a convenient shortcut that combines several other annotations needed to configure a Spring Boot application:
+## Q.14: Purpose of `@SpringBootApplication`?
+ The `@SpringBootApplication` annotation is a convenient shortcut that combines several other annotations needed to configure a Spring Boot application:
 
 1. `@Configuration`: This annotation indicates that the class is a source for bean definitions in the Spring container.
 2. `@EnableAutoConfiguration`: This annotation enables auto-configuration features provided by Spring Boot. It scans your project's dependencies and configuration properties to automatically configure various components.
 3. `@ComponentScan`: This annotation allows you to specify a package (or multiple packages) where Spring should search for beans to register in the application context. By default, it will look for components in the same package as the annotated class or its subpackages.
-4. `@Import(EnableAutoConfigurationImportSelector.class)`: This line of code imports the `EnableAutoConfigurationImportSelector`, which selects appropriate auto-configuration classes based on your project's dependencies and configuration properties.
 
 In summary, the `@SpringBootApplication` annotation simplifies the configuration process by automatically setting up the Spring container, enabling auto-configuration, scanning for components, and importing necessary classes for you. This allows you to quickly bootstrap a new Spring Boot application without having to manually configure each component.
 
@@ -143,8 +206,8 @@ In summary, the `@SpringBootApplication` annotation simplifies the configuration
 public class App { public static void main(String[] args){ SpringApplication.run(App.class,args);} }
 ```
 
-## Q.13: What is `@ConfigurationProperties`?
-**Answer:** `@ConfigurationProperties` in Spring is used to **bind external configuration (application.properties / application.yml)** to a strongly-typed Java object.
+## Q.15: What is `@ConfigurationProperties`?
+`@ConfigurationProperties` in Spring is used to **bind external configuration (application.properties / application.yml)** to a strongly-typed Java object.
 
 ### Example
 
@@ -177,8 +240,8 @@ Now Spring will automatically map:
 👉 This makes configuration clean, type-safe, and avoids repeated `@Value` annotations.
 
 
-## Q.14: `@Value` vs `@ConfigurationProperties`?
-**Answer:**   Both `@Value` and `@ConfigurationProperties` are used in Spring Framework to inject values from external sources (such as YAML, properties files, or command-line arguments) into your Java code. However, there are some key differences between the two annotations:
+## Q.16: `@Value` vs `@ConfigurationProperties`?
+  Both `@Value` and `@ConfigurationProperties` are used in Spring Framework to inject values from external sources (such as YAML, properties files, or command-line arguments) into your Java code. However, there are some key differences between the two annotations:
 
 1. `@Value`:
    - This annotation is used to inject a simple value into a field or method parameter. It can only be used with string literals or SpEl expressions.
@@ -213,8 +276,8 @@ public class ConfigurableBean {
 In the above example, `SimpleProperty` uses `@Value` to inject a single property from an external source, while `ConfigurableBean` uses `@ConfigurationProperties` to bind multiple properties within the bean class.
 
 
-## Q.15: What is `@RestController`?
-**Answer:** It’s a specialized `@Controller` where every handler method’s return value is written to the HTTP response body (typically JSON) via message converters.
+## Q.17: What is `@RestController`?
+It’s a specialized `@Controller` where every handler method’s return value is written to the HTTP response body (typically JSON) via message converters.
 
 **Example:**
 ```java
@@ -223,8 +286,8 @@ In the above example, `SimpleProperty` uses `@Value` to inject a single property
 class UserController { @GetMapping("/{id}") UserDto find(@PathVariable Long id){ return service.find(id);} }
 ```
 
-## Q.16: Difference between `@RequestParam` and `@PathVariable`?
-**Answer:** `@PathVariable` binds parts of the URI path (e.g., `/users/{id}`), representing resource identity. `@RequestParam` binds query string/form parameters for filtering, pagination, options.
+## Q.18: Difference between `@RequestParam` and `@PathVariable`?
+`@PathVariable` binds parts of the URI path (e.g., `/users/{id}`), representing resource identity. `@RequestParam` binds query string/form parameters for filtering, pagination, options.
 
 **Example:**
 ```java
@@ -233,8 +296,8 @@ class UserController { @GetMapping("/{id}") UserDto find(@PathVariable Long id){
 ```
 
 
-## Q.17: How to create custom exception handling?
-**Answer:**   To create custom exception handling in Spring using `@ControllerAdvice`, follow these steps:
+## Q.19: How to create custom exception handling?
+  To create custom exception handling in Spring using `@ControllerAdvice`, follow these steps:
 
 1. Create an exception handling class that extends `ResponseEntityExceptionHandler`:
 
@@ -285,26 +348,31 @@ In this example, we set the prefix and suffix for our views, specify the error p
 
 By following these steps, you can create a custom exception handling system in your Spring project using `@ControllerAdvice`. This allows you to handle validation errors and other exceptions consistently across all controllers and provide meaningful error messages to the user.
 
-## Q.18: What is Spring AOP?
-**Answer:** Spring Aspect-Oriented Programming (AOP) is an programming technique that enables you to modularize concerns like logging, security, and transaction management in your application. With Spring AOP, you can create crosscutting concerns as separate components called aspects, which are applied dynamically to target classes or methods during runtime.
+## Q.20: What is Spring AOP?
+Spring Aspect-Oriented Programming (AOP) is an programming technique that enables you to modularize concerns like logging, security, and transaction management in your application. With Spring AOP, you can create crosscutting concerns as separate components called aspects, which are applied dynamically to target classes or methods during runtime.
 
 
-## Q.19: Purpose of Actuator?
-**Answer:** Spring Actuator is a module within the Spring Boot framework that provides a set of endpoints for monitoring and managing applications. Its main purpose is to provide visibility, control, and introspection into running applications, helping developers and operations teams to troubleshoot issues, optimize performance, and secure their applications.
+## Q.21: Purpose of Actuator?
+Spring Boot Actuator is a module within the Spring Boot framework that provides production-ready features for monitoring and managing a running Spring Boot application. It exposes operational data and insights about the application through various endpoints, typically accessible via HTTP.
 
-By using Spring Actuator, you can gain valuable insights into the performance, security, and health of your applications, making it easier to manage them effectively and ensure they meet the needs of your users.
+**Advantages of Spring Boot Actuator:**
+
+**Enhanced Monitoring and Visibility:** Actuator offers endpoints to easily retrieve crucial information about the application's health, metrics (like memory usage, CPU, HTTP requests), environment properties, configurations, and more. This provides real-time visibility into the application's state and performance.
+
+**Simplified Production Management:** It provides features that are essential for managing applications in a production environment. This includes capabilities for health checks, shutdown, and viewing active threads, which are vital for operational teams.
+
+**Troubleshooting and Debugging:**
+The detailed information exposed by Actuator endpoints assists in diagnosing issues and debugging problems in production. For instance, examining thread dumps or heap dumps can help identify performance bottlenecks or memory leaks.
+
+**Integration with Monitoring Tools:**
+Actuator's metrics and health information can be easily integrated with external monitoring systems like Prometheus, Grafana, or other enterprise monitoring solutions, allowing for comprehensive dashboards and alerts.
+
+**Reduced Development Effort:**
+By providing pre-built and easily configurable endpoints, Actuator significantly reduces the boilerplate code developers would otherwise need to write for monitoring and management functionalities.
 
 
-
-**Example:** Properties to expose health and metrics:
-```
-management.endpoints.web.exposure.include=health,info,metrics,prometheus
-management.endpoint.health.show-details=when_authorized
-```
-
-
-## Q.20: What does `@EnableAutoConfiguration` do?
-**Answer:** ### Short Explanation
+## Q.22: What does `@EnableAutoConfiguration` do?
+### Short Explanation
 
 `@EnableAutoConfiguration` tells Spring Boot to **automatically configure beans** in the application context based on the **classpath**, **existing beans**, and **application properties**.
 It reduces boilerplate — you don’t need to manually configure things like `DataSource`, `DispatcherServlet`, `EntityManager`, etc.
@@ -335,8 +403,8 @@ Here,
 `@EnableAutoConfiguration` lets Spring Boot **guess & configure** what you likely need, instead of you writing lots of XML/Java config manually.
 
 
-## Q.21: Example of custom `@ConfigurationProperties`?
-**Answer:** Use a dedicated type with a prefix and register it for binding. Validate where necessary.
+## Q.23: Example of custom `@ConfigurationProperties`?
+Use a dedicated type with a prefix and register it for binding. Validate where necessary.
 ```java
 @ConfigurationProperties(prefix="app.mail")
 @Validated
@@ -344,8 +412,8 @@ record MailProps(@NotBlank String host, int port) {}
 ```
 
 
-## Q.22: Diagnose circular dependency in Spring?
-**Answer:** Circular dependency happens when **Bean A depends on Bean B and Bean B also depends (directly/indirectly) on Bean A**.
+## Q.24: Diagnose circular dependency in Spring?
+Circular dependency happens when **Bean A depends on Bean B and Bean B also depends (directly/indirectly) on Bean A**.
 Spring fails to resolve such cycles (especially with constructor injection).
 
 ---
@@ -358,8 +426,8 @@ How to Diagnose Circular Dependencies in Spring
    * Example:
 
      ```
-     Caused by: org.springframework.beans.factory.BeanCurrentlyInCreationException: 
-     Error creating bean with name 'beanA': Requested bean is currently in creation: Is there an unresolvable circular reference?
+        Caused by: org.springframework.beans.factory.BeanCurrentlyInCreationException: 
+        Error creating bean with name 'beanA': Requested bean is currently in creation: Is there an unresolvable circular reference?
      ```
 
 2. **Check Constructor Injection**
@@ -412,8 +480,8 @@ class BeanB {
 
 ---
 
-## Q.23: What are different specializations of `@Component`?
-**Answer:** The main **specializations of `@Component`** in Spring are annotations that **semantically indicate the layer or role** of a bean, but under the hood they’re still `@Component`. They are:
+## Q.25: What are different specializations of `@Component`?
+The main **specializations of `@Component`** in Spring are annotations that **semantically indicate the layer or role** of a bean, but under the hood they’re still `@Component`. They are:
 
 | Annotation          | Typical Layer / Use Case                                  |
 | ------------------- | --------------------------------------------------------- |
@@ -433,13 +501,10 @@ class BeanB {
 
 > Specializations of `@Component` are mostly **semantic** to make the code clearer and, in some cases (like `@Repository`), provide additional functionality.
 
-If you want, I can also **draw a quick hierarchy diagram** showing `@Component` at the top and all its specializations — it’s very handy for interviews.
-
-
 ---
 
-## Q.24: What is @Autowired annotation?
-**Answer:** `@Autowired` tells Spring to inject a dependency automatically. It can be used on constructors, setters, or fields. Spring will find a bean of the required type and inject it.
+## Q.26: What is @Autowired annotation?
+`@Autowired` tells Spring to inject a dependency automatically. It can be used on constructors, setters, or fields. Spring will find a bean of the required type and inject it.
 
 **Example:**
 ```java
@@ -452,20 +517,14 @@ class EmailService {
 
 ---
 
-## Q.25: What is constructor injection and why prefer it?
-**Answer:** Constructor injection means dependencies are provided through the constructor. 
+## Q.27: What is constructor injection and why prefer it?
+Constructor injection means dependencies are provided through the constructor. 
 
- Constructor injection has several benefits over field injection in Spring Framework:
+Constructor injection is considered preferred in Spring Framework for several reasons:
 
-1. Immutability: When you inject dependencies through constructors, you create an immutable object, meaning the state of the object cannot be changed once it's created. This helps prevent issues related to mutable objects and promotes a cleaner design.
-
-2. Strongly-Typed Objects: Constructor injection guarantees that the correct types of dependencies are injected into the object, ensuring type safety and reducing the risk of errors during runtime. Field injection, on the other hand, relies on the Spring container to set the field values appropriately based on the configuration and may result in exceptions if incorrect types are used.
-
-3. Encapsulation: Constructor injection promotes encapsulation since it requires developers to expose only the necessary constructors, making it easier to control the object creation process and hide internal implementations. This can help maintain a clean separation of concerns between classes, making the application more modular and easier to test.
-
-4. Simplified Testing: Injecting dependencies via constructors makes unit testing more straightforward because you don't have to worry about setting field values manually. You can create test-specific instances of the class by providing mock or test implementations through constructor arguments.
-
-In summary, constructor injection offers several advantages, including type safety, immutability, encapsulation, and simplified testing, making it a preferred choice in Spring Framework development.
+1. **Immutability:** Using constructor injection ensures that the object's state cannot be modified after construction, promoting immutable objects. This makes it easier to reason about the behavior of the object and helps in debugging and testing.
+2. **Explicit Dependencies:** Constructor injection clearly defines the dependencies a class has on other classes or components, making it easier for developers to understand the relationships between classes and avoid circular dependencies.
+3. **Enforced Initialization:** By using constructor injection, all dependencies are provided at object creation time, ensuring that the object is in a well-defined state before being used. This can help prevent null pointer exceptions or other runtime errors caused by uninitialized objects.
 
 **Example:**
 ```java
@@ -483,8 +542,8 @@ class PaymentService {
 
 ---
 
-## Q.26: What are Spring profiles?
-**Answer:** Spring Profiles is a feature that allows developers to configure different aspects of their application based on the environment in which it is running. This can include development, testing, staging, or production environments, among others.
+## Q.28: What are Spring profiles?
+Spring Profiles is a feature that allows developers to configure different aspects of their application based on the environment in which it is running. This can include development, testing, staging, or production environments, among others.
 
 By using profiles, you can selectively enable or disable certain beans, configuration properties, and other components in your Spring application context, depending on the active profile. This can help simplify the configuration of your application for various deployment scenarios while keeping a single codebase.
 
@@ -507,8 +566,8 @@ By activating different profiles, you can tailor your Spring application to the 
 
 ---
 
-## Q.27: What is @Value annotation?
-**Answer:** `@Value` injects values from properties files, environment variables, or default values directly into fields.
+## Q.29: What is @Value annotation?
+`@Value` injects values from properties files, environment variables, or default values directly into fields.
 
 **Example:**
 ```java
@@ -524,23 +583,8 @@ class AppConfig {
 
 ---
 
-## Q.28: What is @ConfigurationProperties?
-**Answer:** Binds external configuration to a Java object, providing type-safe configuration with validation support.
-
-**Example:**
-```java
-@ConfigurationProperties(prefix = "app.mail")
-record MailConfig(String host, int port, String username) {}
-```
-
----
-
-## Q.29: What is @RestController?
-**Answer:** A convenience annotation that combines `@Controller` and `@ResponseBody`. It's used for REST APIs where methods return data that should be written directly to the HTTP response body.
-
-
 ## Q.30: What is @RequestMapping?
-**Answer:**    `@RequestMapping` is a fundamental annotation in the Spring Framework that is used to handle HTTP requests and map them to methods in a controller class (e.g., `@Controller`, `@RestController`). It defines a mapping between the incoming request URL pattern and the corresponding method that will process the request.
+   `@RequestMapping` is a fundamental annotation in the Spring Framework that is used to handle HTTP requests and map them to methods in a controller class (e.g., `@Controller`, `@RestController`). It defines a mapping between the incoming request URL pattern and the corresponding method that will process the request.
 
 The `@RequestMapping` annotation can be applied at the class level or method level, with different options for defining the HTTP methods, path variables, and request parameters:
 
@@ -574,7 +618,7 @@ By using `@RequestMapping`, you can create clean and concise controller classes 
 ---
 
 ## Q.31: What is @RequestParam?
-**Answer:** Binds method parameters to query parameters, form data, or parts of multipart requests.
+Binds method parameters to query parameters, form data, or parts of multipart requests.
 
 **Example:**
 ```java
@@ -586,7 +630,7 @@ List<User> getUsers(@RequestParam(defaultValue = "0") int page,
 ---
 
 ## Q.32: What is @RequestBody?
-**Answer:** Binds the HTTP request body to a method parameter. It's commonly used with POST/PUT requests to receive JSON or XML data.
+Binds the HTTP request body to a method parameter. It's commonly used with POST/PUT requests to receive JSON or XML data.
 
 **Example:**
 ```java
@@ -597,7 +641,7 @@ User createUser(@RequestBody CreateUserRequest request) { /* ... */ }
 ---
 
 ## Q.33: What is @Valid annotation?
-**Answer:** Triggers validation of the annotated object using Bean Validation annotations like `@NotNull`, `@Size`, etc.
+Triggers validation of the annotated object using Bean Validation annotations like `@NotNull`, `@Size`, etc.
 
 **Example:**
 ```java
@@ -610,7 +654,7 @@ record CreateUserRequest(@NotBlank String name, @Email String email) {}
 ---
 
 ## Q.34: What is Spring Data JPA?
-**Answer:** A Spring module that simplifies data access by providing repository abstractions, query methods, and common data access patterns without writing boilerplate code.
+A Spring module that simplifies data access by providing repository abstractions, query methods, and common data access patterns without writing boilerplate code.
 
 **Example:**
 ```java
@@ -624,7 +668,7 @@ interface UserRepository extends JpaRepository<User, Long> {
 ---
 
 ## Q.35: What is @Entity?
-**Answer:** Marks a class as a JPA entity that maps to a database table. It's used with JPA annotations like `@Id`, `@Column`, and `@Table`.
+Marks a class as a JPA entity that maps to a database table. It's used with JPA annotations like `@Id`, `@Column`, and `@Table`.
 
 **Example:**
 ```java
@@ -643,12 +687,12 @@ class User {
 ---
 
 ## Q.36: What is @Id annotation?
-**Answer:** Marks a field as the primary key of an entity. It's required for every JPA entity.
+Marks a field as the primary key of an entity. It's required for every JPA entity.
 
 ---
 
 ## Q.37: What is @GeneratedValue?
-**Answer:** Specifies how the primary key value should be generated automatically (e.g., auto-increment, sequence, table).
+Specifies how the primary key value should be generated automatically (e.g., auto-increment, sequence, table).
 
 **Example:**
 ```java
@@ -660,32 +704,56 @@ private Long id;
 ---
 
 ## Q.38: What is lazy loading vs eager loading?
-**Answer:** 
-In the context of JPA and ORM frameworks like Hibernate, lazy loading and eager loading refer to strategies for fetching related entities associated with an entity at runtime:
 
-1. Lazy Loading: When using lazy loading, related entities are not fetched from the database immediately but only when they are accessed for the first time. This can help optimize performance by reducing the number of queries executed initially. However, it may result in additional database accesses during runtime due to the need to load related entities on demand.
+### **Eager Loading**
 
-2. Eager Loading: In contrast, when using eager loading, all related entities are fetched from the database along with the initial query, even if they are not immediately needed. This can help reduce the number of queries executed at runtime since all required data is already loaded in one go. However, it may result in a larger initial payload and potentially slower performance due to the increased number of queries executed initially.
+* All related entities are **fetched immediately** along with the parent entity.
+* Uses **`JOIN`** queries.
+* Good if you always need the related data.
 
-By choosing between lazy loading and eager loading strategies, developers can optimize their JPA applications for various scenarios based on factors like performance requirements, data access patterns, and query complexity. It's important to carefully consider these strategies when designing the entity relationships in your application to ensure optimal database performance and minimized network traffic.
-
-**Example:**
 ```java
-@OneToMany(fetch = FetchType.LAZY) // Load only when accessed
-private List<Order> orders;
+@Entity
+public class User {
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private List<Order> orders;
+}
+```
 
-@OneToOne(fetch = FetchType.EAGER) // Load immediately
-private Address address;
+If you fetch a `User`, Hibernate will also fetch all `orders` right away.
 
 ---
 
+### **Lazy Loading (default for collections)**
+
+* Related entities are **fetched only when accessed**, not at the time the parent is retrieved.
+* Uses **proxy objects**.
+* Saves memory and improves performance if related data is rarely used.
+
+```java
+@Entity
+public class User {
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Order> orders;
+}
+```
+
+When you fetch a `User`, `orders` won’t be retrieved until you explicitly call `user.getOrders()`.
+
+---
+
+### **Summary (Interview Answer)**
+
+* **Eager loading:** Loads all related entities at the same time → ensures availability but can cause performance overhead and large queries.
+* **Lazy loading:** Loads related entities only when accessed → improves performance but may cause `LazyInitializationException` if accessed outside a transaction.
+
+
 ## Q.39: What is N+1 query problem?
-**Answer:** A performance issue where fetching a list of entities results in 1 query for the list plus N queries for each entitys associations. It can be solved using fetch joins, `@EntityGraph`, or DTO projections.
+A performance issue where fetching a list of entities results in 1 query for the list plus N queries for each entitys associations. It can be solved using fetch joins, `@EntityGraph`, or DTO projections.
 
 ---
 
 ## Q.40: What is @Query annotation?
-**Answer:** Allows you to define custom JPQL or native SQL queries for repository methods.
+Allows you to define custom JPQL or native SQL queries for repository methods.
 
 **Example:**
 ```java
@@ -699,17 +767,17 @@ List<User> findUsersCreatedAfter(Date date);
 ---
 
 ## Q.41: What is CSRF protection?
-**Answer:** Cross-Site Request Forgery protection prevents malicious websites from making unauthorized requests on behalf of authenticated users. It's enabled by default in Spring Security for stateful applications.
+Cross-Site Request Forgery protection prevents malicious websites from making unauthorized requests on behalf of authenticated users. It's enabled by default in Spring Security for stateful applications.
 
 ---
 
 ## Q.42: What is CORS?
-**Answer:** Cross-Origin Resource Sharing allows web applications to make requests to different domains. It's configured to specify allowed origins, methods, and headers.
+Cross-Origin Resource Sharing allows web applications to make requests to different domains. It's configured to specify allowed origins, methods, and headers.
 
 ---
 
 ## Q.43: What is @ConditionalOnProperty?
-**Answer:** Conditionally creates a bean based on the presence and value of a configuration property.
+Conditionally creates a bean based on the presence and value of a configuration property.
 
 **Example:**
 ```java
@@ -723,7 +791,7 @@ EmailService emailService() {
 ---
 
 ## Q.44: What is @ConditionalOnClass?
-**Answer:** Conditionally creates a bean only if a specified class is present on the classpath.
+Conditionally creates a bean only if a specified class is present on the classpath.
 
 **Example:**
 ```java
@@ -737,7 +805,7 @@ ExternalServiceClient externalServiceClient() {
 ---
 
 ## Q.45: What is @EnableConfigurationProperties?
-**Answer:** Enables binding of `@ConfigurationProperties` classes to external configuration.
+Enables binding of `@ConfigurationProperties` classes to external configuration.
 
 **Example:**
 ```java
@@ -748,13 +816,13 @@ class MailConfiguration {}
 
 ---
 
-## Q.46: What is @Configuration?
-**Answer:** Indicates that a class contains bean definitions. It's processed by Spring to create and configure beans.
+## Q.46: What is `@Configuration`?
+Indicates that a class contains bean definitions. It's processed by Spring to create and configure beans.
 
 ---
 
 ## Q.47: What is @Bean annotation?
-**Answer:** Indicates that a method produces a bean to be managed by the Spring container.
+Indicates that a method produces a bean to be managed by the Spring container.
 
 **Example:**
 ```java
@@ -769,63 +837,8 @@ class DatabaseConfig {
 
 ---
 
-## Q.48: What is @Primary annotation?
-**Answer:** Indicates that a bean should be given preference when multiple candidates are qualified to autowire a single-valued dependency.
-
----
-
-## Q.49: What is @Qualifier annotation?
-**Answer:** Specifies which bean to inject when multiple beans of the same type exist.
-
-**Example:**
-```java
-@Service
-class PaymentService {
-    private final PaymentGateway gateway;
-    
-    PaymentService(@Qualifier("stripeGateway") PaymentGateway gateway) {
-        this.gateway = gateway;
-    }
-}
-```
-
----
-
-## Q.50: What is @Scope annotation? What are different types of it?
-**Answer:** Specifies the scope of a bean (singleton, prototype, request, session, etc.).
-
-Spring supports the following bean scopes:
-
-1. **`singleton`** (default):
-    - A single shared instance of the bean is created and used throughout the Spring IoC container. This is the default scope if no scope is specified.
-    - Every request for this bean will return the same instance.
-2. **`prototype`**:
-    - A new instance of the bean is created each time it is requested from the Spring container.
-    - This scope is suitable for beans that need to be stateless or have a short lifecycle.
-3. **`request`** (Web applications only):
-    - A new instance is created for each HTTP request.
-    - The bean is only available during the lifecycle of the HTTP request and is discarded after the request is completed.
-4. **`session`** (Web applications only):
-    - A new instance is created for each HTTP session.
-    - The bean is tied to the HTTP session and remains active for the duration of that session.
-5. **`application`** (Web applications only):
-    - A single instance of the bean is created for the entire ServletContext (the entire web application).
-    - The bean is shared across all HTTP requests and sessions in the application.
-6. **`websocket`** (Web applications only):
-    - A new instance is created for each WebSocket connection.
-    - The bean is tied to the lifecycle of a WebSocket connection and is discarded once the connection is closed.
-
-**Example:**
-```java
-@Component
-@Scope("prototype")
-class PrototypeBean {}
-```
-
----
-
-## Q.51: What is @PostConstruct?
-**Answer:** Marks a method to be executed after dependency injection is complete. It's used for initialization logic.
+## Q.48: What is @PostConstruct?
+Marks a method to be executed after dependency injection is complete. It's used for initialization logic.
 
 **Example:**
 ```java
@@ -840,8 +853,8 @@ class CacheManager {
 
 ---
 
-## Q.52: What is @PreDestroy?
-**Answer:** Marks a method to be executed before the bean is destroyed. It's used for cleanup logic.
+## Q.49: What is @PreDestroy?
+Marks a method to be executed before the bean is destroyed. It's used for cleanup logic.
 
 **Example:**
 ```java
@@ -855,99 +868,17 @@ class CacheManager {
 ```
 ---
 
-## Q.53: What is @ResponseBody?
-**Answer:** Good question — `@ResponseBody` is one of the core annotations in Spring MVC / Spring Boot.
+## Q.50: What is @ResponseBody?
+The `@ResponseBody` annotation in Spring Framework is used to indicate that the return value of a method should be directly serialized and sent as the HTTP response body, rather than being processed further by Spring's ModelAndView resolution process.
+
+When a method is annotated with `@ResponseBody`, it can produce a wide variety of responses, such as JSON, XML, or plain text, depending on the serialization mechanism you use (e.g., Jackson, Gson). This annotation can be used with various types of methods, including controller actions and service methods.
+
+By using `@ResponseBody`, developers can create more efficient and flexible RESTful APIs by reducing the need for complex ModelAndView configurations and allowing for better control over the format and structure of the response data.
 
 ---
 
-## **1️⃣ What it is**
-
-* `@ResponseBody` tells Spring that **the return value of a method should be written directly into the HTTP response body** instead of being resolved as a **view (like JSP, Thymeleaf, etc.)**.
-
----
-
-## **2️⃣ Why it’s needed**
-
-By default in Spring MVC:
-
-* A `@Controller` method returns a **view name** (e.g., `"home"`) → Spring tries to render a JSP/HTML template.
-* If you want to return **JSON, XML, or plain text**, you mark the method (or class) with `@ResponseBody`.
-
----
-
-## **3️⃣ Example**
-
-### Without `@ResponseBody`
-
-```java
-@Controller
-public class UserController {
-    @GetMapping("/user")
-    public String getUser() {
-        return "user"; // interpreted as view name "user.jsp"
-    }
-}
-```
-
-### With `@ResponseBody`
-
-```java
-@Controller
-public class UserController {
-    @GetMapping("/user")
-    @ResponseBody
-    public User getUser() {
-        return new User(1, "Aditya");
-    }
-}
-```
-
-* Spring uses **HttpMessageConverters** (like Jackson for JSON) to automatically convert `User` object → JSON in the response:
-
-```json
-{
-  "id": 1,
-  "name": "Aditya"
-}
-```
-
----
-
-## **4️⃣ Common uses**
-
-* Returning **JSON APIs** in Spring MVC.
-* Returning **plain text or raw data**.
-* Often replaced by `@RestController` (which is basically `@Controller + @ResponseBody`).
-
----
-
-## **5️⃣ Difference from `@RestController`**
-
-```java
-@RestController
-public class UserController {
-    @GetMapping("/user")
-    public User getUser() {
-        return new User(1, "Aditya"); // auto-converted to JSON
-    }
-}
-```
-
-* Saves you from adding `@ResponseBody` on each method.
-* Best practice for building REST APIs.
-
----
-
-✅ **Summary:**
-
-* `@ResponseBody` → binds method return value directly to HTTP response.
-* Uses **HttpMessageConverters** to convert objects to JSON/XML.
-* `@RestController` = shorthand for `@Controller + @ResponseBody`.
-
----
-
-## Q.54: What is @ResponseStatus?
-**Answer:** Maps an exception or controller method to an HTTP status code.
+## Q.51: What is @ResponseStatus?
+Maps an exception or controller method to an HTTP status code.
 
 **Example:**
 ```java

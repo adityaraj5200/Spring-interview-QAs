@@ -1,4 +1,4 @@
-## Q. What is the difference between spring and spring boot?
+## Q.1: What is the difference between spring and spring boot?
 
 1. Spring Framework: It is an extensive collection of modules for developing Java applications, including aspects such as Dependency Injection (DI), Aspect-Oriented Programming (AOP), JDBC templates, Web MVC, and more. Developers have to write a lot of XML configuration files or annotations for setting up the application.
 
@@ -7,7 +7,7 @@
 In essence, Spring Framework is the foundation upon which Spring Boot builds, offering more flexibility in terms of configuration options while Spring Boot focuses on streamlining the development process by providing pre-configured starters and reducing the amount of boilerplate code required to create a Spring project.
 
 
-## Q. What’s the difference between @Component, @Service, and @Repository? Do they really behave differently?
+## Q.2: What’s the difference between @Component, @Service, and @Repository? Do they really behave differently?
 At the **core level**, `@Component`, `@Service`, and `@Repository` are all **stereotype annotations** in Spring, meaning they all behave the same way for **component scanning** — they mark a class as a Spring bean.
 
 But there are some **semantic and practical differences**:
@@ -31,11 +31,9 @@ But there are some **semantic and practical differences**:
 
 👉 **So functionally, all three are Spring beans**, but `@Service` and `@Repository` add extra semantics and (in the case of `@Repository`) extra functionality.
 
-Would you like me to also show you **a short table comparison** (like for revision notes)?
 
 
-
-## Q. What is component scanning in spring?
+## Q.3: What is component scanning in spring?
  Component Scanning in Spring is a technique used for auto-detection and autoconfiguration of beans. It allows you to automatically register beans defined in components, such as Controllers, Services, or Repositories, based on certain naming conventions or annotations like @Component, @Service, @Repository, or @Controller.
 
 When you enable component scanning, Spring will search for and manage any classes annotated with these annotations within the specified base package(s). This makes it easier to set up your application, as you don't have to manually configure each bean in the configuration file (application.properties or application.xml) anymore.
@@ -53,7 +51,7 @@ public class AppConfig {
 In the above example, Spring will search for annotated components in the "com.example" package and its sub-packages, automatically creating and managing those beans at runtime. This is a powerful feature that helps streamline the development process by reducing the amount of boilerplate configuration required.
 
 
-## Q. What is difference between `@Controller` and `@RestController`?
+## Q.4: What is difference between `@Controller` and `@RestController`?
  The main difference between `@Controller` and `@RestController` in Spring MVC lies in the default response type and behavior of the controller methods (handlers) they annotate.
 
 1. **@Controller:**
@@ -95,8 +93,8 @@ In this example, the `handleRequest` method will handle the HTTP request, perfor
 Using `@RestController` is recommended when you're building RESTful web services that primarily deal with data transfer and JSON/XML responses, while using `@Controller` might be more suitable for traditional web applications dealing with views and HTML templates.
 
 
-## Q. What is the auto-configuration feature of spring-boot?
- The auto-configuration feature in Spring Boot helps you to quickly set up a new application with minimal manual configuration. Spring Boot automatically configures common libraries, services, and infrastructure components based on the dependencies that are present in your project.
+## Q.5: What is the auto-configuration feature of spring-boot?
+The auto-configuration feature in Spring Boot helps you to quickly set up a new application with minimal manual configuration. Spring Boot automatically configures common libraries, services, and infrastructure components based on the dependencies that are present in your project.
 
 When you start a Spring Boot application, it will search for specific starters (dependency configurations) in your classpath and apply the necessary configurations to enable those features. This process involves several aspects, including:
 
@@ -115,7 +113,7 @@ When you start a Spring Boot application, it will search for specific starters (
 The auto-configuration feature in Spring Boot helps developers to get started quickly with a minimal amount of manual configuration, making it easier to build and run applications effectively.
 
 
-## Q. What does `@Configuration` does?
+## Q.6: What does `@Configuration` does?
 In Spring Framework, particularly when using Spring Boot, the `@Configuration` annotation is used to mark a class as a Java-based configuration class that contains one or more `@Bean` methods for declaring and configuring Spring components (e.g., beans, services, controllers).
 
 When you apply the `@Configuration` annotation to a class, you are telling Spring that this class should be processed during the application context initialization to create the necessary beans. The class can also include other configuration metadata like component scanning, qualifiers, and importing additional configuration classes.
@@ -138,23 +136,8 @@ public class AppConfig {
 In this example, the `AppConfig` class is annotated with `@Configuration`, and it contains a single `@Bean` method that creates an instance of `MyService`. When Spring initializes the application context, it will process the `AppConfig` class to create a bean for the `MyService` component.
 
 
-## Q. And what does `@Bean` does? Why it's applied on methods? If beans are classes/objects they why `@Bean` is used with methods?
-In Spring Framework, the `@Bean` annotation is used to indicate that a method produces a specific bean instance or configuration for the application context. When a method is annotated with `@Bean`, Spring will create and manage an instance of the produced object as a bean during the application context initialization.
 
-The reason `@Bean` is applied on methods rather than classes is because it allows you to define complex configurations for individual components or dependencies, which may not always be achievable by just configuring them at the class level. For example, you might need to configure a bean with properties, initialize it with specific data, or use dependency injection to create more complex objects.
-
-By using `@Bean` on methods, you can:
-
-1. Create and configure multiple instances of the same component.
-2. Define conditions for creating beans based on environment variables, profiles, or other factors.
-3. Use dependency injection to create complex objects that involve several components.
-4. Configure properties, scopes, and dependencies for each bean instance.
-5. Override auto-configured beans to customize their behavior or provide alternatives.
-
-Overall, the `@Bean` annotation plays a crucial role in defining the beans required by your Spring application, allowing you to create, configure, and manage objects easily and effectively.
-
-
-## Q. What's the difference between `@Configruation` and `@Component`?
+## Q.7: What's the difference between `@Configruation` and `@Component`?
 In Spring Framework, both `@Configuration` and `@Component` are used for configuring components within a Spring-based application. However, they serve slightly different purposes:
 
 1. `@Component`: The `@Component` annotation is primarily used to mark classes as Spring components that will be registered in the application context during bean scanning. By default, it applies to any class annotated with `@Component`, `@Controller`, `@Service`, or `@Repository`. Components can also have their scopes specified using additional annotations like `@Singleton` or `@Prototype`.
@@ -171,7 +154,7 @@ The main differences between `@Component` and `@Configuration` are:
 In summary, both `@Component` and `@Configuration` are important annotations in Spring Framework, but they serve slightly different purposes and are used in different scenarios to configure components within a Spring application.
 
 
-## Q. How does Spring resolve circular dependencies?
+## Q.8: How does Spring resolve circular dependencies?
 
 Spring can **sometimes resolve circular dependencies**, but not always. It depends on **injection type** and **Spring’s bean creation mechanism**.
 
@@ -183,14 +166,14 @@ Spring can **sometimes resolve circular dependencies**, but not always. It depen
 
    * Spring creates bean instances in **two phases**:
 
-     1. **Instantiation** (creates the object, empty shell, no dependencies injected yet).
-     2. **Dependency Injection** (wires dependencies into the object).
+        1. **Instantiation** (creates the object, empty shell, no dependencies injected yet).
+        2. **Dependency Injection** (wires dependencies into the object).
 
    * If `BeanA` depends on `BeanB` and both use **setter/field injection**, Spring can:
 
-     * Instantiate `BeanA` and put it in the **singleton cache (early reference)**.
-     * Instantiate `BeanB`. When `BeanB` asks for `BeanA`, Spring gives the early reference.
-     * Then finish injecting the dependencies for both.
+        * Instantiate `BeanA` and put it in the **singleton cache (early reference)**.
+        * Instantiate `BeanB`. When `BeanB` asks for `BeanA`, Spring gives the early reference.
+        * Then finish injecting the dependencies for both.
 
    ✅ Works fine.
 
@@ -243,7 +226,7 @@ Spring can **sometimes resolve circular dependencies**, but not always. It depen
 ---
 
 
-## Q. How does Spring Boot handle Dependency Injection compared to traditional Spring?
+## Q.9: How does Spring Boot handle Dependency Injection compared to traditional Spring?
 Here’s a crisp comparison of how **Spring Boot** handles Dependency Injection (DI) vs **traditional Spring**:
 
 ---
@@ -315,11 +298,7 @@ Here’s a crisp comparison of how **Spring Boot** handles Dependency Injection 
 Spring Boot **reduces boilerplate** by combining **component scanning** + **auto-configuration**, while traditional Spring required explicit bean definitions in XML/Java Config.
 
 
-## Q. What are the features which are present in spring boot but not in spring?
-Good question — this is often asked in Spring Boot interviews.
-Here’s a clear breakdown:
-
----
+## Q.10: What are the features which are present in spring boot but not in spring?
 
 ### **Features in Spring Boot (not present in traditional Spring)**
 
@@ -402,7 +381,7 @@ Traditional Spring is **powerful but verbose**, while Spring Boot is **opinionat
 
 
 
-## Q. What is Spring Actuator used for, and how do you enable common endpoints like /health, /beans, and /env?
+## Q.11: What is Spring Actuator used for, and how do you enable common endpoints like /health, /beans, and /env?
 Here’s the breakdown for **Spring Boot Actuator**:
 
 ---
@@ -464,12 +443,12 @@ You enable it by **adding the starter** and **configuring `management.endpoints.
 
 
 
-## Q. How does Spring Boot auto-configuration work, and what does @SpringBootApplication combine under the hood?
+## Q.12: How does Spring Boot auto-configuration work, and what does @SpringBootApplication combine under the hood?
 Let’s break this into **two parts**:
 
 ---
 
-## **1. How Spring Boot Auto-Configuration Works**
+### **1. How Spring Boot Auto-Configuration Works**
 
 * **Key idea**: Provide **sensible defaults** based on the **classpath** and **application properties**.
 * Driven by the `@EnableAutoConfiguration` annotation.
@@ -482,10 +461,10 @@ Let’s break this into **two parts**:
    * e.g.:
 
      ```properties
-     org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-     org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration,\
-     org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,\
-     org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+        org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+        org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration,\
+        org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,\
+        org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
      ```
 2. Each listed class is a `@Configuration` class with `@Conditional` annotations.
 
@@ -498,7 +477,7 @@ Let’s break this into **two parts**:
 
 ---
 
-## **2. What `@SpringBootApplication` Combines**
+### **2. What `@SpringBootApplication` Combines**
 
 `@SpringBootApplication` is a convenience annotation that **bundles three key annotations**:
 
@@ -545,9 +524,23 @@ public class MyApp {
 
 ---
 
+## Q.13: What is the difference between `@Configuration` and `@SpringBootConfiguration`?
+
+`@Configuration` is a core Spring annotation used to define a class that contains `@Bean` methods for the application context. It’s part of the general Spring Framework.
+
+`@SpringBootConfiguration` is a specialization of `@Configuration` introduced by Spring Boot. It’s essentially the same, but it indicates that this configuration class is the primary one for a Spring Boot application.
+
+In fact, `@SpringBootApplication` internally uses `@SpringBootConfiguration` along with `@EnableAutoConfiguration` and `@ComponentScan`.
+
+So, the key difference is:
+
+* `@Configuration`: Generic Spring annotation for bean definitions.
+* `@SpringBootConfiguration`: A Spring Boot–specific marker annotation, mainly used internally by Spring Boot to identify the primary configuration class.
+
+---
 
 
-## Q. If you’ve to inject 100s of implementations of a service, how would you approach it?
+## Q.14: If you’ve to inject 100s of implementations of a service, how would you approach it?
 This is a **classic Spring DI question** — if you have *hundreds of implementations* of the same service interface, you can’t just do `@Autowired MyService service;` because Spring won’t know which bean to inject.
 
 Here are the approaches:
@@ -676,7 +669,7 @@ class PaymentFactory {
 
 
 
-## Q. What if you need to handle 100+ implementations that may keep changing dynamically?
+## Q.15: What if you need to handle 100+ implementations that may keep changing dynamically?
 if we need to handle **100+ implementations that may keep changing dynamically**, we want a solution that **avoids modifying code every time** a new implementation is added.
 
 Here’s the **scalable approach**:
@@ -767,7 +760,7 @@ class ServiceFactory {
 
 
 
-## Q. How do you design asynchronous, non-blocking code in Spring Boot?
+## Q.16: How do you design asynchronous, non-blocking code in Spring Boot?
 Here’s how you’d approach **asynchronous, non-blocking design in Spring Boot** — something interviewers often dig into:
 
 ---
@@ -856,7 +849,7 @@ In Spring Boot, asynchronous, non-blocking code can be achieved in two main ways
 ---
 
 
-## Q. What happens if two beans of the same type exist but you don’t use @Qualifier?
+## Q.17: What happens if two beans of the same type exist but you don’t use @Qualifier?
 ### **Case: Two Beans of Same Type Without `@Qualifier`**
 
 If Spring finds **multiple candidate beans** for injection and you haven’t told it which one to use, the behavior depends on the situation:
@@ -932,7 +925,7 @@ class Car {
 
 ---
 
-## Q. How does Spring Boot handle circular dependencies?
+## Q.18: How does Spring Boot handle circular dependencies?
 This is a tricky but important Spring Boot question.
 
 ---
@@ -1030,7 +1023,7 @@ class A {
 
 
 
-## Q. How does Spring Boot manage embedded servers like Tomcat or Jetty?
+## Q.19: How does Spring Boot manage embedded servers like Tomcat or Jetty?
 Here’s the breakdown of how **Spring Boot manages embedded servers (Tomcat, Jetty, Undertow)**:
 
 ---
@@ -1128,7 +1121,7 @@ Here’s the breakdown of how **Spring Boot manages embedded servers (Tomcat, Je
 ---
 
 
-## Q. Exception handling best practices in REST APIs?
+## Q.20: Exception handling best practices in REST APIs?
 When designing **REST APIs in Spring Boot**, exception handling is a **core concern** — both for developer experience and for clients consuming the API.
 
 Here are the **best practices**:
@@ -1247,75 +1240,101 @@ public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException
 
 ---
 
+## Q.21: How to secure REST APIs (JWT, OAuth2)?
+
+To secure REST APIs, I would use **authentication + authorization + transport security**:
+
+1. **Authentication**
+
+    * Common approach is **JWT (JSON Web Tokens)** for stateless auth.
+    * After login, the server issues a signed JWT containing user identity, roles, and expiry.
+    * Client sends this JWT in the `Authorization: Bearer <token>` header for every request.
+    * The server validates the signature and claims, without needing session storage.
+
+2. **Authorization**
+
+   * Once the JWT is verified, roles/permissions inside the token decide access (e.g., role-based access control).
+   * This keeps APIs protected at method/endpoint level.
+
+3. **OAuth2 (Delegated Authorization)**
+
+   * For third-party logins or allowing apps limited access, I’d use OAuth2.
+   * Example: "Login with Google" → client gets an **access token** (often a JWT) from the identity provider.
+   * The API trusts that provider and validates the token before serving requests.
+
+4. **Transport Security**
+
+   * Always enforce **HTTPS/TLS** to prevent token sniffing or man-in-the-middle attacks.
+   * Tokens must have **expiry + refresh mechanism** to limit risk if compromised.
+
+5. **Best Practices**
+
+   * Use short-lived access tokens and long-lived refresh tokens.
+   * Store secrets (keys for signing JWTs) securely (e.g., AWS KMS, Vault).
+   * Apply rate limiting, input validation, and logging to guard against abuse.
+
+---
+
+✅ **30-second summary you can actually say in interviews:**
+*"I’d secure REST APIs using stateless JWTs for authentication and role-based authorization. For delegated access or third-party logins, I’d rely on OAuth2. Every request would carry a signed JWT in the header, verified by the server without maintaining session state. I’d enforce HTTPS, short token expiry, refresh tokens, and apply rate limiting and input validation as additional layers of security."*
 
 
-## Q. How to secure REST APIs (JWT, OAuth2)?
+## Q.22: What is this `@ControllerAdvice`? Why and how to use it?
+`@ControllerAdvice` is a **Spring annotation** that lets you apply **cross-cutting concerns** (like exception handling, data binding, or model population) across multiple controllers in one place.
+
+---
+
+### ⚡ Simple Analogy
+
+Think of `@ControllerAdvice` as a **“common rules/manager”** for all your controllers.
+
+* Instead of teaching every controller separately what to do if something goes wrong,
+* you define the rules once in a `@ControllerAdvice` class,
+* and Spring applies it everywhere automatically.
 
 
+---
 
-## Q. 
+### ✅ Why use it?
 
+* Centralizes error handling → clean and consistent error responses.
+* Reduces duplicate code in controllers.
+* Helps return user-friendly error messages instead of ugly stack traces.
 
-## Q. 
+---
 
+### 🔧 How to use it?
 
-## Q. 
+You create a class annotated with `@ControllerAdvice`, and inside it you write methods annotated with `@ExceptionHandler`.
 
+Example:
 
-## Q. 
+```java
+@ControllerAdvice
+public class GlobalExceptionHandler {
 
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<String> handleNullPointer(NullPointerException ex) {
+        return new ResponseEntity<>("Null value found!", HttpStatus.BAD_REQUEST);
+    }
 
-## Q. 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleGeneral(Exception ex) {
+        return new ResponseEntity<>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+```
 
+Now:
 
-## Q. 
+* If **any controller** in your app throws a `NullPointerException`, Spring will send back `400 Bad Request` with `"Null value found!"`.
+* If **any controller** throws some other `Exception`, it returns `500 Internal Server Error`.
 
+---
 
-## Q. 
+### 📌 Variants
 
+* `@RestControllerAdvice` → same, but assumes `@ResponseBody` by default (useful for REST APIs).
+* You can also use it to add **global model attributes** (via `@ModelAttribute`) or customize **data binding**.
 
-## Q. 
-
-
-## Q. 
-
-
-## Q. 
-
-
-## Q. 
-
-
-## Q. 
-
-
-## Q. 
-
-
-## Q. 
-
-
-## Q. 
-
-
-## Q. 
-
-
-## Q. 
-
-
-## Q. 
-
-
-## Q. 
-
-
-## Q. 
-
-
-## Q. 
-
-
-## Q. 
-
-
+---
