@@ -1,10 +1,26 @@
 ## Q.1: What is the difference between spring and spring boot?
 
-1. Spring Framework: It is an extensive collection of modules for developing Java applications, including aspects such as Dependency Injection (DI), Aspect-Oriented Programming (AOP), JDBC templates, Web MVC, and more. Developers have to write a lot of XML configuration files or annotations for setting up the application.
+Spring and Spring Boot are related, but they serve different purposes:
 
-2. Spring Boot: It is built upon the core Spring Framework but comes with several improvements to simplify the development process. It offers pre-configured starters that include commonly used dependencies, allowing developers to create a Spring project with minimal setup. Spring Boot also provides features like auto-configuration and embedded servers (e.g., Tomcat, Jetty, or Undertow).
+1. **Spring Framework**
 
-In essence, Spring Framework is the foundation upon which Spring Boot builds, offering more flexibility in terms of configuration options while Spring Boot focuses on streamlining the development process by providing pre-configured starters and reducing the amount of boilerplate code required to create a Spring project.
+   * A **comprehensive Java framework** that provides features like dependency injection, AOP, transaction management, data access, and integration.
+   * It’s powerful but requires a lot of **manual configuration** (XML/Java config, servlet setup, dependency management).
+   * Developers need to integrate third-party libraries manually (e.g., Tomcat, Jackson, Hibernate).
+
+2. **Spring Boot**
+
+   * A **lightweight extension of Spring** that simplifies development.
+   * Provides **auto-configuration** (beans, DB, security, etc. are configured automatically based on classpath).
+   * Comes with an **embedded server** (Tomcat, Jetty, Undertow) → no need to deploy WAR files separately.
+   * Has **starter dependencies** (e.g., `spring-boot-starter-web`) to reduce dependency management overhead.
+   * Provides **production-ready features** like health checks, metrics, and monitoring through **Spring Boot Actuator**.
+
+---
+
+**Crisp interview version:**
+*"Spring is a framework for building Java applications, but requires a lot of manual configuration. Spring Boot builds on top of Spring, offering auto-configuration, starter dependencies, and an embedded server, making application setup and development much faster and easier."*
+
 
 
 ## Q.2: What’s the difference between @Component, @Service, and @Repository? Do they really behave differently?
@@ -442,42 +458,7 @@ Spring Actuator = **monitoring + management tool** for Spring Boot apps.
 You enable it by **adding the starter** and **configuring `management.endpoints.web.exposure.include`**.
 
 
-
-## Q.12: How does Spring Boot auto-configuration work, and what does @SpringBootApplication combine under the hood?
-Let’s break this into **two parts**:
-
----
-
-### **1. How Spring Boot Auto-Configuration Works**
-
-* **Key idea**: Provide **sensible defaults** based on the **classpath** and **application properties**.
-* Driven by the `@EnableAutoConfiguration` annotation.
-
-### Internal Mechanism:
-
-1. When your app starts, Spring Boot loads `spring.factories` (from JARs inside the classpath).
-
-   * Example: `spring-boot-autoconfigure` JAR has a `META-INF/spring.factories` file that lists auto-config classes.
-   * e.g.:
-
-     ```properties
-        org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-        org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration,\
-        org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,\
-        org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
-     ```
-2. Each listed class is a `@Configuration` class with `@Conditional` annotations.
-
-   * Example: `DataSourceAutoConfiguration` only activates **if**:
-
-     * `DataSource` class is on the classpath,
-     * and no custom `DataSource` bean is defined.
-3. Based on conditions, Spring Boot **auto-registers beans** (e.g., `DispatcherServlet`, `DataSource`, `EntityManager`).
-4. You can **override defaults** by defining your own beans or using `application.properties`.
-
----
-
-### **2. What `@SpringBootApplication` Combines**
+## Q.num: What does @SpringBootApplication combine under the hood?
 
 `@SpringBootApplication` is a convenience annotation that **bundles three key annotations**:
 
@@ -523,6 +504,46 @@ public class MyApp {
   * `@ComponentScan`.
 
 ---
+
+## Q.12: How does Spring Boot auto-configuration work under the hood?
+
+1. **`@SpringBootApplication` triggers auto-configuration**
+
+   * This annotation includes `@EnableAutoConfiguration`.
+   * `@EnableAutoConfiguration` tells Spring Boot: *“Look for auto-configuration classes and apply them.”*
+
+2. **Spring Factories mechanism (`spring.factories`)**
+
+   * Inside Spring Boot JARs, there’s a file `META-INF/spring.factories`.
+   * This file lists all auto-configuration classes (e.g., `DataSourceAutoConfiguration`, `WebMvcAutoConfiguration`).
+   * When your app starts, Spring loads these classes via `SpringFactoriesLoader`.
+
+3. **Conditional Beans (`@ConditionalOnXxx`)**
+
+   * Auto-config classes don’t blindly create beans.
+   * They are guarded with annotations like:
+
+     * `@ConditionalOnClass` → applies config only if a specific class is on the classpath (e.g., `DataSource` for JDBC).
+     * `@ConditionalOnMissingBean` → applies only if you haven’t defined a custom bean.
+     * `@ConditionalOnProperty` → applies only if a certain property is set in `application.properties` or `application.yml`.
+
+4. **Example:**
+
+   * If you add **H2 database** dependency, Spring Boot sees `DataSource` class on the classpath.
+   * `DataSourceAutoConfiguration` kicks in → auto-creates a DataSource bean.
+   * If you later define your own `DataSource` bean, Boot **backs off** (because of `@ConditionalOnMissingBean`).
+
+5. **Override Mechanism (Developer always wins)**
+
+   * If you don’t like the auto-configured bean, you can override it by providing your own bean.
+   * Spring Boot’s philosophy is: *“convention over configuration, but developer choice always wins.”*
+
+---
+
+### **Crisp Interview Answer**
+
+*"Spring Boot auto-configuration works by scanning predefined configuration classes listed in `spring.factories`. These classes use conditional annotations to create beans only when certain conditions are met (like class presence or property settings). If the developer defines a custom bean, Boot’s auto-config backs off, ensuring flexibility while providing sensible defaults."*
+
 
 ## Q.13: What is the difference between `@Configuration` and `@SpringBootConfiguration`?
 
@@ -670,7 +691,7 @@ class PaymentFactory {
 
 
 ## Q.15: What if you need to handle 100+ implementations that may keep changing dynamically?
-if we need to handle **100+ implementations that may keep changing dynamically**, we want a solution that **avoids modifying code every time** a new implementation is added.
+If we need to handle **100+ implementations that may keep changing dynamically**, we want a solution that **avoids modifying code every time** a new implementation is added.
 
 Here’s the **scalable approach**:
 
@@ -1024,99 +1045,33 @@ class A {
 
 
 ## Q.19: How does Spring Boot manage embedded servers like Tomcat or Jetty?
-Here’s the breakdown of how **Spring Boot manages embedded servers (Tomcat, Jetty, Undertow)**:
+
+Spring Boot manages embedded servers (like **Tomcat**, **Jetty**, or **Undertow**) by packaging them inside your application as dependencies. This removes the need to deploy your WAR file into an external server — instead, the server is **embedded** into your JAR.
+
+1. **Starter dependency:**
+   When you add `spring-boot-starter-web`, Spring Boot pulls in `spring-boot-starter-tomcat` by default.
+
+2. **ServletWebServerApplicationContext:**
+   On startup, Boot creates a `ServletWebServerApplicationContext`, which looks for a `ServletWebServerFactory`. For Tomcat, it uses `TomcatServletWebServerFactory`.
+
+3. **Embedded Server Lifecycle:**
+
+   * Boot calls `factory.getWebServer()` to create an embedded server instance.
+   * It registers the Spring `DispatcherServlet` inside this server.
+   * The server is started on the configured port (default: `8080`).
+
+4. **Switching servers:**
+   You can switch Tomcat → Jetty or Undertow just by changing the dependency, no extra config needed.
 
 ---
 
-### **1. Embedded Server Concept**
-
-* In traditional Spring apps → you deploy a **WAR file** to an **external server** (Tomcat, JBoss, WebLogic, etc.).
-* In Spring Boot → the server is **embedded inside your application JAR**.
-* You run with:
-
-  ```bash
-  java -jar myapp.jar
-  ```
-
-  → Bootstraps both **Spring context** and the **server**.
+**Analogy:**
+Think of Tomcat as a “mini web server engine” packed **inside your car (app)**, so you just start your car (`java -jar app.jar`) and the engine runs. In traditional Spring (WAR deployment), you had to **park your car in someone else’s garage (external Tomcat server)** to run.
 
 ---
 
-### **2. How It Works in Spring Boot**
-
-1. When you include a starter like:
-
-   ```xml
-   <dependency>
-       <groupId>org.springframework.boot</groupId>
-       <artifactId>spring-boot-starter-web</artifactId>
-   </dependency>
-   ```
-
-   * By default, it pulls in **Spring MVC + embedded Tomcat**.
-   * If you want Jetty/Undertow → include their starter and exclude Tomcat.
-
-2. During startup:
-
-   * `SpringApplication.run(...)` creates an **ApplicationContext**.
-   * It detects that you’re building a **web application**.
-   * It creates an `EmbeddedWebServerFactory` (e.g., `TomcatServletWebServerFactory`).
-   * That factory starts the embedded server on the configured `server.port` (default = 8080).
-   * Spring registers a `DispatcherServlet` inside that server to handle incoming requests.
-
-3. Server lifecycle is **managed by Spring** → it starts when the app runs, and stops gracefully on shutdown.
-
----
-
-### **3. Switching Servers**
-
-* To switch from Tomcat to Jetty:
-
-  ```xml
-  <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-jetty</artifactId>
-  </dependency>
-  ```
-
-  And exclude Tomcat:
-
-  ```xml
-  <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-      <exclusions>
-          <exclusion>
-              <groupId>org.springframework.boot</groupId>
-              <artifactId>spring-boot-starter-tomcat</artifactId>
-          </exclusion>
-      </exclusions>
-  </dependency>
-  ```
-
----
-
-### **4. Configuration**
-
-* Port:
-
-  ```properties
-  server.port=9090
-  ```
-* Context Path:
-
-  ```properties
-  server.servlet.context-path=/api
-  ```
-
----
-
-### ✅ In Short
-
-* Spring Boot embeds **Tomcat (default)**, Jetty, or Undertow inside the JAR.
-* Managed via **`EmbeddedWebServerFactory`** beans.
-* **No external deployment needed** → makes apps self-contained and portable.
-* You can **switch or configure** servers via dependencies and properties.
+**Key Interview Takeaway:**
+*"Spring Boot embeds Tomcat (or Jetty/Undertow) inside the application via `ServletWebServerFactory`. This makes the app self-contained and runnable with `java -jar`, without needing external deployment."*
 
 ---
 
@@ -1240,7 +1195,34 @@ public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException
 
 ---
 
-## Q.21: How to secure REST APIs (JWT, OAuth2)?
+## Q.21: Difference between `@ControllerAdvice` and `@RestControllerAdvice`?
+
+1. **@ControllerAdvice**
+
+   * It is a specialization of `@Component`.
+   * Used for **global exception handling**, **model binding**, and **data pre-processing** across multiple controllers.
+   * Typically works with MVC (`@Controller`) — meaning it returns a **view (HTML/JSP/Thymeleaf page)** by default.
+   * If you return objects, you need to annotate methods with `@ResponseBody` explicitly to send JSON/XML.
+
+2. **@RestControllerAdvice**
+
+   * It is basically `@ControllerAdvice + @ResponseBody`.
+   * Meant for REST APIs (`@RestController`).
+   * All responses are automatically **serialized into JSON/XML** (no need for `@ResponseBody`).
+   * Mostly used for **returning structured JSON error responses** in REST API exception handling.
+
+---
+
+✅ **When to use what?**
+
+* If you’re building a **web MVC app (views + templates)** → use `@ControllerAdvice`.
+* If you’re building a **REST API (JSON responses)** → use `@RestControllerAdvice`.
+
+---
+
+
+
+## Q.22: How to secure REST APIs (JWT, OAuth2)?
 
 To secure REST APIs, I would use **authentication + authorization + transport security**:
 
@@ -1279,7 +1261,7 @@ To secure REST APIs, I would use **authentication + authorization + transport se
 *"I’d secure REST APIs using stateless JWTs for authentication and role-based authorization. For delegated access or third-party logins, I’d rely on OAuth2. Every request would carry a signed JWT in the header, verified by the server without maintaining session state. I’d enforce HTTPS, short token expiry, refresh tokens, and apply rate limiting and input validation as additional layers of security."*
 
 
-## Q.22: What is this `@ControllerAdvice`? Why and how to use it?
+## Q.23: What is this `@ControllerAdvice`? Why and how to use it?
 `@ControllerAdvice` is a **Spring annotation** that lets you apply **cross-cutting concerns** (like exception handling, data binding, or model population) across multiple controllers in one place.
 
 ---
@@ -1338,3 +1320,44 @@ Now:
 * You can also use it to add **global model attributes** (via `@ModelAttribute`) or customize **data binding**.
 
 ---
+
+## Q.24: What is the difference between application.properties and application.yml?
+
+In Spring Boot, both **`application.properties`** and **`application.yml`** are used for external configuration, but the main difference is in their **format and readability**:
+
+- **application.properties** → Key-value pairs with `=` or `:`. Example: ```properties
+server.port=8081
+spring.datasource.url=jdbc:mysql://localhost:3306/test
+```
+It’s simple and widely used, but can become less readable with nested configs.
+
+- **application.yml** → Uses YAML format with indentation. Example:
+```yaml
+server:
+port: 8081
+spring:
+datasource:
+    url: jdbc:mysql://localhost:3306/test
+```
+It’s more structured, human-friendly, and better for **hierarchical/nested configurations**.
+
+Functionally, both work the same — Spring Boot will load either. It’s just about readability and team preference.
+
+---
+
+👉 Best practice: Use **YAML (`application.yml`)** for complex configurations, and stick to **properties** for smaller projects or when the team is more comfortable with key-value style.
+
+
+## Q.25: If both `application.properties` and `application.yml` are present, which one does Spring Boot use?
+Spring Boot supports both formats, but if both files are present in the same project, **`application.properties`** takes precedence over **`application.yml`**.
+
+
+## Q.26: 
+
+
+## Q.27: 
+
+
+## Q.28: 
+
+

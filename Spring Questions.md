@@ -35,6 +35,31 @@ try (var ctx = new AnnotationConfigApplicationContext(AppConfig.class)) {
 }
 ```
 
+## Q.46: What is @Configuration?
+`@Configuration` is a Spring annotation used to mark a class as a **source of bean definitions** for the Spring IoC container.
+
+* A class annotated with `@Configuration` is equivalent to the old-style **XML configuration** in Spring.
+* Methods inside it that are annotated with `@Bean` tell Spring how to **create and manage beans**.
+* These beans are automatically registered in the application context.
+
+**Example:**
+
+```java
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public UserService userService() {
+        return new UserService();
+    }
+
+    @Bean
+    public OrderService orderService() {
+        return new OrderService(userService()); // dependency injection
+    }
+}
+```
+
 ## Q.3: `@Bean` vs `@Component` in Spring?
 
 Both `@Bean` and `@Component` are used to create beans in the Spring container, but they differ in how they are applied:
@@ -148,13 +173,35 @@ class CacheManager {
 ```
 
 ## Q.9: What is `ApplicationContext` vs `BeanFactory`?
- `ApplicationContext` and `BeanFactory` are both interfaces in the Spring Framework that act as an IoC (Inversion of Control) container for managing application components. However, they have some differences in their functionalities:
+ `ApplicationContext` and `BeanFactory` are both interfaces in the Spring Framework that act as an IoC (Inversion of Control) container for managing application components. However, they have some differences in their functionalities.
 
-1. **BeanFactory Interface**: This is the base interface of the Spring container with minimal functionality. It allows you to look up and instantiate beans by their name using a simple getBean method. It does not offer many additional features like autowiring, message sources, event publishers, or support for loading configuration files.
+* **BeanFactory**:
 
-2. **ApplicationContext Interface**: This interface extends the BeanFactory interface and offers more advanced functionalities. As mentioned earlier, it supports dependencies between beans (autowiring), message source for internationalization, event publishing and listening mechanisms, loading application-specific configuration properties, and integration with other Spring modules like Transaction Management, MVC, JPA, etc.
+    * The basic IoC container.
+    * Provides only fundamental bean management (instantiation, dependency injection, lifecycle).
+    * Beans are created **lazily** (only when requested).
+    * Lightweight, suitable for memory-constrained environments.
 
-In practice, you should use `ApplicationContext` instead of `BeanFactory` whenever possible due to the extra features it provides. For a simple application or when performance is crucial, you can stick with `BeanFactory`. But in most cases, using an `ApplicationContext` will simplify your code and make your applications more maintainable.
+* **ApplicationContext**:
+
+    * A **superset** of BeanFactory.
+    * Provides all BeanFactory features **plus** advanced ones like:
+
+    * Event publishing (`ApplicationEventPublisher`)
+    * Internationalization (i18n)
+    * Automatic BeanPostProcessor and BeanFactoryPostProcessor registration
+    * Easier integration with Spring AOP
+    * Beans are created **eagerly by default** at startup.
+    * Preferred for enterprise applications.
+
+
+---
+
+✅ **Crisp way to remember for interviews:**
+
+* **BeanFactory** → Core, minimal, lazy initialization.
+* **ApplicationContext** → Full-featured, enterprise-ready, eager by default.
+
 
 ## Q.10: What does `@Primary` do?
 Marks a bean as the default candidate when multiple beans of the same type exist and no `@Qualifier` is provided. It’s a tie-breaker, not a replacement for explicit `@Qualifier` in complex graphs.
@@ -176,14 +223,6 @@ public PaymentService(@Qualifier("stripeGateway") PaymentGateway gateway) { /*..
 ## Q.12: What is auto-configuration in Spring Boot?
  Auto-configuration in Spring Boot is a feature that automatically configures common Spring components based on the presence of certain artifacts on your classpath or by analyzing your application's metadata such as annotations and properties. This helps simplify the configuration process, reducing the need for explicit bean definitions and XML configurations.
 
-Here are some key aspects of auto-configuration in Spring Boot:
-
-1. Starter POMs: Spring Boot provides various starter POMs (dependency management files) that define a set of essential libraries and dependencies required for specific functionality, such as Web, JPA, Security, or Reactive programming models. These starters also contain auto-configuration classes that configure related components based on the starters included in your project.
-
-2. Auto-configuration Classes: These classes extend the standard Spring `Configuration` class and contain methods annotated with `@Bean`, which define beans to be registered within the application context. When these auto-configuration classes are loaded, they automatically configure the specified components based on the available dependencies and configuration properties.
-
-3. Conditional and Refactored Configuration: Auto-configuration also includes conditional logic that allows for flexibility when configuring your application. For example, certain beans may only be registered under specific conditions or configurations. Additionally, Spring Boot refactors many common configurations to avoid duplicating code across different projects.
-
 Auto-configuration in Spring Boot makes it easier and faster to set up a basic working environment, enabling you to focus more on your application's business logic rather than the configuration details. However, you can still provide your own custom configurations if needed or overwrite auto-configured components by defining your own bean definitions or properties.
 
 ## Q.13: What are Spring Boot starters?
@@ -192,18 +231,26 @@ Some examples are: `spring-boot-starter-web`, `spring-boot-starter-data-jpa`, `s
 
 
 ## Q.14: Purpose of `@SpringBootApplication`?
- The `@SpringBootApplication` annotation is a convenient shortcut that combines several other annotations needed to configure a Spring Boot application:
 
-1. `@Configuration`: This annotation indicates that the class is a source for bean definitions in the Spring container.
-2. `@EnableAutoConfiguration`: This annotation enables auto-configuration features provided by Spring Boot. It scans your project's dependencies and configuration properties to automatically configure various components.
-3. `@ComponentScan`: This annotation allows you to specify a package (or multiple packages) where Spring should search for beans to register in the application context. By default, it will look for components in the same package as the annotated class or its subpackages.
+The `@SpringBootApplication` annotation is a **convenience annotation** in Spring Boot that combines three important annotations into one:
 
-In summary, the `@SpringBootApplication` annotation simplifies the configuration process by automatically setting up the Spring container, enabling auto-configuration, scanning for components, and importing necessary classes for you. This allows you to quickly bootstrap a new Spring Boot application without having to manually configure each component.
+1. **`@SpringBootConfiguration`** → Marks the class as a source of bean definitions (like `@Configuration`).
+2. **`@EnableAutoConfiguration`** → Triggers Spring Boot’s **auto-configuration mechanism** to configure beans based on classpath dependencies.
+3. **`@ComponentScan`** → Enables component scanning in the current package and its subpackages so Spring can detect `@Component`, `@Service`, `@Repository`, etc.
 
-**Example:**
+So when you put `@SpringBootApplication` on your main class, you’re essentially telling Spring Boot:
+
+* “This is my main configuration class, scan for beans, and apply auto-configuration.”
+
+Example:
+
 ```java
 @SpringBootApplication
-public class App { public static void main(String[] args){ SpringApplication.run(App.class,args);} }
+public class MyApp {
+    public static void main(String[] args) {
+        SpringApplication.run(MyApp.class, args);
+    }
+}
 ```
 
 ## Q.15: What is `@ConfigurationProperties`?
@@ -349,7 +396,70 @@ In this example, we set the prefix and suffix for our views, specify the error p
 By following these steps, you can create a custom exception handling system in your Spring project using `@ControllerAdvice`. This allows you to handle validation errors and other exceptions consistently across all controllers and provide meaningful error messages to the user.
 
 ## Q.20: What is Spring AOP?
-Spring Aspect-Oriented Programming (AOP) is an programming technique that enables you to modularize concerns like logging, security, and transaction management in your application. With Spring AOP, you can create crosscutting concerns as separate components called aspects, which are applied dynamically to target classes or methods during runtime.
+
+Spring AOP (Aspect-Oriented Programming) is a programming paradigm that helps in separating **cross-cutting concerns** from the main business logic of an application. Cross-cutting concerns are features like logging, transaction management, security, performance monitoring, etc., which are needed across multiple layers of the application. If we add this code everywhere, it leads to duplication and clutter.
+
+With Spring AOP, we can define these concerns in separate classes called **Aspects**. These aspects contain **Advices**, which specify what action to take, and **Pointcuts**, which specify where in the application (like before or after a method call) that action should run.
+
+For example, instead of writing logging code in every method, we can create a logging aspect that executes automatically before or after target methods.
+
+Spring AOP works by creating **proxies** around beans at runtime. When a method that matches the pointcut is called, the proxy weaves in the advice logic.
+
+This approach improves **separation of concerns, code reusability, and maintainability**, since business logic remains focused only on its core purpose while cross-cutting concerns are handled centrally.
+
+---
+Here’s a **real-world example** you can use in interviews:
+
+
+💡 **Example: Logging with Spring AOP**
+
+Suppose you want to log the execution time of every service method without writing logging code in each method.
+
+**Step 1: Create an Aspect**
+
+```java
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.springframework.stereotype.Component;
+
+@Aspect
+@Component
+public class LoggingAspect {
+
+    @Around("execution(* com.example.service.*.*(..))")
+    public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
+        long start = System.currentTimeMillis();
+        
+        Object result = joinPoint.proceed();  // executes the actual method
+        
+        long elapsedTime = System.currentTimeMillis() - start;
+        System.out.println(joinPoint.getSignature() + " executed in " + elapsedTime + "ms");
+        
+        return result;
+    }
+}
+```
+
+**Step 2: Enable AOP in your Spring Boot app**
+Spring Boot enables AOP automatically with `spring-boot-starter-aop` dependency.
+
+---
+
+🔑 **How this works in interviews:**
+
+* The `@Aspect` class defines **cross-cutting logic** (logging).
+* The `@Around` advice runs **before and after** the method call.
+* The pointcut expression `execution(* com.example.service.*.*(..))` means it applies to all methods inside the `service` package.
+* Without touching business logic, you now have centralized performance logging.
+
+---
+
+You can also mention that **Transaction Management in Spring** internally uses AOP: Spring applies a transactional aspect around methods annotated with `@Transactional`, handling commit/rollback automatically.
+
+---
+
+👉 Do you want me to also give you a **short 3–4 line “ready-to-speak” version** of this example for interviews?
 
 
 ## Q.21: Purpose of Actuator?
@@ -401,15 +511,6 @@ Here,
 
 👉 In simple words:
 `@EnableAutoConfiguration` lets Spring Boot **guess & configure** what you likely need, instead of you writing lots of XML/Java config manually.
-
-
-## Q.23: Example of custom `@ConfigurationProperties`?
-Use a dedicated type with a prefix and register it for binding. Validate where necessary.
-```java
-@ConfigurationProperties(prefix="app.mail")
-@Validated
-record MailProps(@NotBlank String host, int port) {}
-```
 
 
 ## Q.24: Diagnose circular dependency in Spring?
@@ -566,23 +667,6 @@ By activating different profiles, you can tailor your Spring application to the 
 
 ---
 
-## Q.29: What is @Value annotation?
-`@Value` injects values from properties files, environment variables, or default values directly into fields.
-
-**Example:**
-```java
-@Component
-class AppConfig {
-    @Value("${app.name:DefaultApp}")
-    private String appName;
-    
-    @Value("${server.port:8080}")
-    private int serverPort;
-}
-```
-
----
-
 ## Q.30: What is @RequestMapping?
    `@RequestMapping` is a fundamental annotation in the Spring Framework that is used to handle HTTP requests and map them to methods in a controller class (e.g., `@Controller`, `@RestController`). It defines a mapping between the incoming request URL pattern and the corresponding method that will process the request.
 
@@ -614,18 +698,6 @@ public class UserController {
 In the example above, the `@RequestMapping("/users")` annotation at the class level maps all methods in the `UserController` to URLs starting with "/users". The `@RequestMapping(value = "/{id}", method = RequestMethod.GET)` annotation on the `getUser()` method specifies that it should handle GET requests for a specific user, where the id is expected as a path variable in the URL (e.g., /users/123).
 
 By using `@RequestMapping`, you can create clean and concise controller classes that manage HTTP requests in a Spring application.
-
----
-
-## Q.31: What is @RequestParam?
-Binds method parameters to query parameters, form data, or parts of multipart requests.
-
-**Example:**
-```java
-@GetMapping("/users")
-List<User> getUsers(@RequestParam(defaultValue = "0") int page, 
-                    @RequestParam(defaultValue = "10") int size) { /* ... */ }
-```
 
 ---
 
@@ -748,7 +820,39 @@ When you fetch a `User`, `orders` won’t be retrieved until you explicitly call
 
 
 ## Q.39: What is N+1 query problem?
-A performance issue where fetching a list of entities results in 1 query for the list plus N queries for each entitys associations. It can be solved using fetch joins, `@EntityGraph`, or DTO projections.
+
+The **N+1 query problem** happens in JPA/Hibernate when fetching a parent entity and its child associations.
+
+* First, **1 query** is executed to load all parent entities.
+* Then, for each parent, an **additional query (N queries)** is executed to fetch its child collection.
+* So, instead of 1 optimized query, you end up with **N+1 queries**, which causes severe performance issues.
+
+**Example:**
+
+```java
+List<User> users = entityManager.createQuery("SELECT u FROM User u").getResultList();
+for (User user : users) {
+    System.out.println(user.getOrders().size()); // triggers a new query per user
+}
+```
+
+If there are 100 users → **1 query for users + 100 queries for orders = 101 queries.**
+
+---
+
+**Solution:**
+
+* Use **`JOIN FETCH`** in JPQL:
+
+  ```SQL
+  SELECT u FROM User u JOIN FETCH u.orders
+  ```
+* Or configure associations with **`@EntityGraph`** or batch fetching.
+
+---
+
+✅ **Crisp way for interview:**
+*"The N+1 query problem occurs when fetching a parent list causes one query for the parents and N extra queries for each child collection. It’s fixed using `JOIN FETCH`, entity graphs, or batch fetching."*
 
 ---
 
@@ -816,8 +920,6 @@ class MailConfiguration {}
 
 ---
 
-## Q.46: What is `@Configuration`?
-Indicates that a class contains bean definitions. It's processed by Spring to create and configure beans.
 
 ---
 
