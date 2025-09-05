@@ -458,7 +458,7 @@ Spring Actuator = **monitoring + management tool** for Spring Boot apps.
 You enable it by **adding the starter** and **configuring `management.endpoints.web.exposure.include`**.
 
 
-## Q.num: What does @SpringBootApplication combine under the hood?
+## Q.12: What does @SpringBootApplication combine under the hood?
 
 `@SpringBootApplication` is a convenience annotation that **bundles three key annotations**:
 
@@ -505,7 +505,7 @@ public class MyApp {
 
 ---
 
-## Q.12: How does Spring Boot auto-configuration work under the hood?
+## Q.13: How does Spring Boot auto-configuration work under the hood?
 
 1. **`@SpringBootApplication` triggers auto-configuration**
 
@@ -545,7 +545,7 @@ public class MyApp {
 *"Spring Boot auto-configuration works by scanning predefined configuration classes listed in `spring.factories`. These classes use conditional annotations to create beans only when certain conditions are met (like class presence or property settings). If the developer defines a custom bean, Boot’s auto-config backs off, ensuring flexibility while providing sensible defaults."*
 
 
-## Q.13: What is the difference between `@Configuration` and `@SpringBootConfiguration`?
+## Q.14: What is the difference between `@Configuration` and `@SpringBootConfiguration`?
 
 `@Configuration` is a core Spring annotation used to define a class that contains `@Bean` methods for the application context. It’s part of the general Spring Framework.
 
@@ -561,7 +561,7 @@ So, the key difference is:
 ---
 
 
-## Q.14: If you’ve to inject 100s of implementations of a service, how would you approach it?
+## Q.15: If you’ve to inject 100s of implementations of a service, how would you approach it?
 This is a **classic Spring DI question** — if you have *hundreds of implementations* of the same service interface, you can’t just do `@Autowired MyService service;` because Spring won’t know which bean to inject.
 
 Here are the approaches:
@@ -690,7 +690,7 @@ class PaymentFactory {
 
 
 
-## Q.15: What if you need to handle 100+ implementations that may keep changing dynamically?
+## Q.16: What if you need to handle 100+ implementations that may keep changing dynamically?
 If we need to handle **100+ implementations that may keep changing dynamically**, we want a solution that **avoids modifying code every time** a new implementation is added.
 
 Here’s the **scalable approach**:
@@ -781,7 +781,7 @@ class ServiceFactory {
 
 
 
-## Q.16: How do you design asynchronous, non-blocking code in Spring Boot?
+## Q.17: How do you design asynchronous, non-blocking code in Spring Boot?
 Here’s how you’d approach **asynchronous, non-blocking design in Spring Boot** — something interviewers often dig into:
 
 ---
@@ -870,7 +870,7 @@ In Spring Boot, asynchronous, non-blocking code can be achieved in two main ways
 ---
 
 
-## Q.17: What happens if two beans of the same type exist but you don’t use @Qualifier?
+## Q.18: What happens if two beans of the same type exist but you don’t use @Qualifier?
 ### **Case: Two Beans of Same Type Without `@Qualifier`**
 
 If Spring finds **multiple candidate beans** for injection and you haven’t told it which one to use, the behavior depends on the situation:
@@ -946,7 +946,7 @@ class Car {
 
 ---
 
-## Q.18: How does Spring Boot handle circular dependencies?
+## Q.19: How does Spring Boot handle circular dependencies?
 This is a tricky but important Spring Boot question.
 
 ---
@@ -1044,7 +1044,7 @@ class A {
 
 
 
-## Q.19: How does Spring Boot manage embedded servers like Tomcat or Jetty?
+## Q.20: How does Spring Boot manage embedded servers like Tomcat or Jetty?
 
 Spring Boot manages embedded servers (like **Tomcat**, **Jetty**, or **Undertow**) by packaging them inside your application as dependencies. This removes the need to deploy your WAR file into an external server — instead, the server is **embedded** into your JAR.
 
@@ -1076,7 +1076,7 @@ Think of Tomcat as a “mini web server engine” packed **inside your car (app)
 ---
 
 
-## Q.20: Exception handling best practices in REST APIs?
+## Q.21: Exception handling best practices in REST APIs?
 When designing **REST APIs in Spring Boot**, exception handling is a **core concern** — both for developer experience and for clients consuming the API.
 
 Here are the **best practices**:
@@ -1195,7 +1195,7 @@ public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException
 
 ---
 
-## Q.21: Difference between `@ControllerAdvice` and `@RestControllerAdvice`?
+## Q.22: Difference between `@ControllerAdvice` and `@RestControllerAdvice`?
 
 1. **@ControllerAdvice**
 
@@ -1222,7 +1222,7 @@ public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException
 
 
 
-## Q.22: How to secure REST APIs (JWT, OAuth2)?
+## Q.23: How to secure REST APIs (JWT, OAuth2)?
 
 To secure REST APIs, I would use **authentication + authorization + transport security**:
 
@@ -1261,7 +1261,7 @@ To secure REST APIs, I would use **authentication + authorization + transport se
 *"I’d secure REST APIs using stateless JWTs for authentication and role-based authorization. For delegated access or third-party logins, I’d rely on OAuth2. Every request would carry a signed JWT in the header, verified by the server without maintaining session state. I’d enforce HTTPS, short token expiry, refresh tokens, and apply rate limiting and input validation as additional layers of security."*
 
 
-## Q.23: What is this `@ControllerAdvice`? Why and how to use it?
+## Q.24: What is this `@ControllerAdvice`? Why and how to use it?
 `@ControllerAdvice` is a **Spring annotation** that lets you apply **cross-cutting concerns** (like exception handling, data binding, or model population) across multiple controllers in one place.
 
 ---
@@ -1321,7 +1321,7 @@ Now:
 
 ---
 
-## Q.24: What is the difference between application.properties and application.yml?
+## Q.25: What is the difference between application.properties and application.yml?
 
 In Spring Boot, both **`application.properties`** and **`application.yml`** are used for external configuration, but the main difference is in their **format and readability**:
 
@@ -1348,16 +1348,16 @@ Functionally, both work the same — Spring Boot will load either. It’s just a
 👉 Best practice: Use **YAML (`application.yml`)** for complex configurations, and stick to **properties** for smaller projects or when the team is more comfortable with key-value style.
 
 
-## Q.25: If both `application.properties` and `application.yml` are present, which one does Spring Boot use?
+## Q.26: If both `application.properties` and `application.yml` are present, which one does Spring Boot use?
 Spring Boot supports both formats, but if both files are present in the same project, **`application.properties`** takes precedence over **`application.yml`**.
-
-
-## Q.26: 
 
 
 ## Q.27: 
 
 
 ## Q.28: 
+
+
+## Q.29: 
 
 

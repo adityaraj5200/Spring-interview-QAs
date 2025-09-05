@@ -35,7 +35,7 @@ try (var ctx = new AnnotationConfigApplicationContext(AppConfig.class)) {
 }
 ```
 
-## Q.46: What is @Configuration?
+## Q.3: What is @Configuration?
 `@Configuration` is a Spring annotation used to mark a class as a **source of bean definitions** for the Spring IoC container.
 
 * A class annotated with `@Configuration` is equivalent to the old-style **XML configuration** in Spring.
@@ -60,7 +60,7 @@ public class AppConfig {
 }
 ```
 
-## Q.3: `@Bean` vs `@Component` in Spring?
+## Q.4: `@Bean` vs `@Component` in Spring?
 
 Both `@Bean` and `@Component` are used to create beans in the Spring container, but they differ in how they are applied:
 
@@ -92,7 +92,7 @@ Both `@Bean` and `@Component` are used to create beans in the Spring container, 
 ---
 
 
-## Q.4: Constructor vs Setter injection?
+## Q.5: Constructor vs Setter injection?
 Prefer constructor injection for required dependencies and immutability, making objects always valid. Use setter injection for optional or reconfigurable dependencies. Constructor injection is friendlier for tests and prevents circular dependencies from being silently tolerated.
 
 **Example:** Required vs optional dependency.
@@ -107,7 +107,7 @@ class ReportService {
 }
 ```
 
-## Q.5: What are common bean scopes?
+## Q.6: What are common bean scopes?
 `@Scope` Specifies the scope of a bean (singleton, prototype, request, session, etc.).
 
 Spring supports the following bean scopes:
@@ -140,16 +140,16 @@ class PrototypeBean {}
 
 ---
 
-## Q.6: What is `ServletContext`?
+## Q.7: What is `ServletContext`?
 `ServletContext` is a standard Java EE interface that represents the web application itself within the servlet container (e.g., Tomcat, Jetty). It provides a way for servlets and other components within the same web application to communicate with the container and share information.
 
 **Application-wide Scope:** There is only one ServletContext object per web application. This means any information stored as attributes within the ServletContext is accessible to all servlets, JSPs, and other components within that specific web application. This makes it ideal for sharing application-level configuration or resources that are common to all parts of the application
 
-## Q.7: what is `servlet` in java?
+## Q.8: what is `servlet` in java?
 A **Java Servlet** is a server-side Java program that extends the capabilities of a web server to handle client requests and generate dynamic web content. Servlets are a core component of Java Enterprise Edition (Java EE), now known as Jakarta EE, and are primarily used for building dynamic web applications.
 
 
-## Q.8: Describe the bean lifecycle.
+## Q.9: Describe the bean lifecycle.
 The key stages of a Spring bean's lifecycle are:
 
 * **Instantiation:** The Spring container creates an instance of the bean class. This involves reading bean definitions (from XML, Java configuration, or annotations) and using constructors or factory methods to create the object. 
@@ -172,7 +172,7 @@ class CacheManager {
 }
 ```
 
-## Q.9: What is `ApplicationContext` vs `BeanFactory`?
+## Q.10: What is `ApplicationContext` vs `BeanFactory`?
  `ApplicationContext` and `BeanFactory` are both interfaces in the Spring Framework that act as an IoC (Inversion of Control) container for managing application components. However, they have some differences in their functionalities.
 
 * **BeanFactory**:
@@ -203,7 +203,7 @@ class CacheManager {
 * **ApplicationContext** → Full-featured, enterprise-ready, eager by default.
 
 
-## Q.10: What does `@Primary` do?
+## Q.11: What does `@Primary` do?
 Marks a bean as the default candidate when multiple beans of the same type exist and no `@Qualifier` is provided. It’s a tie-breaker, not a replacement for explicit `@Qualifier` in complex graphs.
 
 **Example:**
@@ -212,7 +212,7 @@ Marks a bean as the default candidate when multiple beans of the same type exist
 @Bean Notifier sms() { return new SmsNotifier(); }
 ```
 
-## Q.11: When do you need `@Qualifier`?
+## Q.12: When do you need `@Qualifier`?
 Whenever multiple beans of the same type exist and your injection point must select a specific one. Combine with `@Primary` thoughtfully.
 
 **Example:**
@@ -220,17 +220,17 @@ Whenever multiple beans of the same type exist and your injection point must sel
 public PaymentService(@Qualifier("stripeGateway") PaymentGateway gateway) { /*...*/ }
 ```
 
-## Q.12: What is auto-configuration in Spring Boot?
+## Q.13: What is auto-configuration in Spring Boot?
  Auto-configuration in Spring Boot is a feature that automatically configures common Spring components based on the presence of certain artifacts on your classpath or by analyzing your application's metadata such as annotations and properties. This helps simplify the configuration process, reducing the need for explicit bean definitions and XML configurations.
 
 Auto-configuration in Spring Boot makes it easier and faster to set up a basic working environment, enabling you to focus more on your application's business logic rather than the configuration details. However, you can still provide your own custom configurations if needed or overwrite auto-configured components by defining your own bean definitions or properties.
 
-## Q.13: What are Spring Boot starters?
+## Q.14: What are Spring Boot starters?
 Spring Boot Starters are special Maven or Gradle dependency artifacts that help you quickly bootstrap a new Spring Boot application with the minimum required dependencies for specific functionality. They act as a starting point for your project and simplify the configuration process by providing a pre-configured set of related libraries and dependencies.
 Some examples are: `spring-boot-starter-web`, `spring-boot-starter-data-jpa`, `spring-boot-starter-security`
 
 
-## Q.14: Purpose of `@SpringBootApplication`?
+## Q.15: Purpose of `@SpringBootApplication`?
 
 The `@SpringBootApplication` annotation is a **convenience annotation** in Spring Boot that combines three important annotations into one:
 
@@ -253,7 +253,7 @@ public class MyApp {
 }
 ```
 
-## Q.15: What is `@ConfigurationProperties`?
+## Q.16: What is `@ConfigurationProperties`?
 `@ConfigurationProperties` in Spring is used to **bind external configuration (application.properties / application.yml)** to a strongly-typed Java object.
 
 ### Example
@@ -287,7 +287,7 @@ Now Spring will automatically map:
 👉 This makes configuration clean, type-safe, and avoids repeated `@Value` annotations.
 
 
-## Q.16: `@Value` vs `@ConfigurationProperties`?
+## Q.17: `@Value` vs `@ConfigurationProperties`?
   Both `@Value` and `@ConfigurationProperties` are used in Spring Framework to inject values from external sources (such as YAML, properties files, or command-line arguments) into your Java code. However, there are some key differences between the two annotations:
 
 1. `@Value`:
@@ -323,7 +323,7 @@ public class ConfigurableBean {
 In the above example, `SimpleProperty` uses `@Value` to inject a single property from an external source, while `ConfigurableBean` uses `@ConfigurationProperties` to bind multiple properties within the bean class.
 
 
-## Q.17: What is `@RestController`?
+## Q.18: What is `@RestController`?
 It’s a specialized `@Controller` where every handler method’s return value is written to the HTTP response body (typically JSON) via message converters.
 
 **Example:**
@@ -333,7 +333,7 @@ It’s a specialized `@Controller` where every handler method’s return value i
 class UserController { @GetMapping("/{id}") UserDto find(@PathVariable Long id){ return service.find(id);} }
 ```
 
-## Q.18: Difference between `@RequestParam` and `@PathVariable`?
+## Q.19: Difference between `@RequestParam` and `@PathVariable`?
 `@PathVariable` binds parts of the URI path (e.g., `/users/{id}`), representing resource identity. `@RequestParam` binds query string/form parameters for filtering, pagination, options.
 
 **Example:**
@@ -343,7 +343,7 @@ class UserController { @GetMapping("/{id}") UserDto find(@PathVariable Long id){
 ```
 
 
-## Q.19: How to create custom exception handling?
+## Q.20: How to create custom exception handling?
   To create custom exception handling in Spring using `@ControllerAdvice`, follow these steps:
 
 1. Create an exception handling class that extends `ResponseEntityExceptionHandler`:
@@ -395,7 +395,7 @@ In this example, we set the prefix and suffix for our views, specify the error p
 
 By following these steps, you can create a custom exception handling system in your Spring project using `@ControllerAdvice`. This allows you to handle validation errors and other exceptions consistently across all controllers and provide meaningful error messages to the user.
 
-## Q.20: What is Spring AOP?
+## Q.21: What is Spring AOP?
 
 Spring AOP (Aspect-Oriented Programming) is a programming paradigm that helps in separating **cross-cutting concerns** from the main business logic of an application. Cross-cutting concerns are features like logging, transaction management, security, performance monitoring, etc., which are needed across multiple layers of the application. If we add this code everywhere, it leads to duplication and clutter.
 
@@ -462,7 +462,7 @@ You can also mention that **Transaction Management in Spring** internally uses A
 👉 Do you want me to also give you a **short 3–4 line “ready-to-speak” version** of this example for interviews?
 
 
-## Q.21: Purpose of Actuator?
+## Q.22: Purpose of Actuator?
 Spring Boot Actuator is a module within the Spring Boot framework that provides production-ready features for monitoring and managing a running Spring Boot application. It exposes operational data and insights about the application through various endpoints, typically accessible via HTTP.
 
 **Advantages of Spring Boot Actuator:**
@@ -481,7 +481,7 @@ Actuator's metrics and health information can be easily integrated with external
 By providing pre-built and easily configurable endpoints, Actuator significantly reduces the boilerplate code developers would otherwise need to write for monitoring and management functionalities.
 
 
-## Q.22: What does `@EnableAutoConfiguration` do?
+## Q.23: What does `@EnableAutoConfiguration` do?
 ### Short Explanation
 
 `@EnableAutoConfiguration` tells Spring Boot to **automatically configure beans** in the application context based on the **classpath**, **existing beans**, and **application properties**.
@@ -667,7 +667,7 @@ By activating different profiles, you can tailor your Spring application to the 
 
 ---
 
-## Q.30: What is @RequestMapping?
+## Q.29: What is @RequestMapping?
    `@RequestMapping` is a fundamental annotation in the Spring Framework that is used to handle HTTP requests and map them to methods in a controller class (e.g., `@Controller`, `@RestController`). It defines a mapping between the incoming request URL pattern and the corresponding method that will process the request.
 
 The `@RequestMapping` annotation can be applied at the class level or method level, with different options for defining the HTTP methods, path variables, and request parameters:
@@ -701,7 +701,7 @@ By using `@RequestMapping`, you can create clean and concise controller classes 
 
 ---
 
-## Q.32: What is @RequestBody?
+## Q.30: What is @RequestBody?
 Binds the HTTP request body to a method parameter. It's commonly used with POST/PUT requests to receive JSON or XML data.
 
 **Example:**
@@ -712,7 +712,7 @@ User createUser(@RequestBody CreateUserRequest request) { /* ... */ }
 
 ---
 
-## Q.33: What is @Valid annotation?
+## Q.31: What is @Valid annotation?
 Triggers validation of the annotated object using Bean Validation annotations like `@NotNull`, `@Size`, etc.
 
 **Example:**
@@ -725,7 +725,7 @@ record CreateUserRequest(@NotBlank String name, @Email String email) {}
 
 ---
 
-## Q.34: What is Spring Data JPA?
+## Q.32: What is Spring Data JPA?
 A Spring module that simplifies data access by providing repository abstractions, query methods, and common data access patterns without writing boilerplate code.
 
 **Example:**
@@ -739,7 +739,7 @@ interface UserRepository extends JpaRepository<User, Long> {
 
 ---
 
-## Q.35: What is @Entity?
+## Q.33: What is @Entity?
 Marks a class as a JPA entity that maps to a database table. It's used with JPA annotations like `@Id`, `@Column`, and `@Table`.
 
 **Example:**
@@ -758,12 +758,12 @@ class User {
 
 ---
 
-## Q.36: What is @Id annotation?
+## Q.34: What is @Id annotation?
 Marks a field as the primary key of an entity. It's required for every JPA entity.
 
 ---
 
-## Q.37: What is @GeneratedValue?
+## Q.35: What is @GeneratedValue?
 Specifies how the primary key value should be generated automatically (e.g., auto-increment, sequence, table).
 
 **Example:**
@@ -775,7 +775,7 @@ private Long id;
 
 ---
 
-## Q.38: What is lazy loading vs eager loading?
+## Q.36: What is lazy loading vs eager loading?
 
 ### **Eager Loading**
 
@@ -819,7 +819,7 @@ When you fetch a `User`, `orders` won’t be retrieved until you explicitly call
 * **Lazy loading:** Loads related entities only when accessed → improves performance but may cause `LazyInitializationException` if accessed outside a transaction.
 
 
-## Q.39: What is N+1 query problem?
+## Q.37: What is N+1 query problem?
 
 The **N+1 query problem** happens in JPA/Hibernate when fetching a parent entity and its child associations.
 
@@ -856,7 +856,7 @@ If there are 100 users → **1 query for users + 100 queries for orders = 101 qu
 
 ---
 
-## Q.40: What is @Query annotation?
+## Q.38: What is @Query annotation?
 Allows you to define custom JPQL or native SQL queries for repository methods.
 
 **Example:**
@@ -870,17 +870,17 @@ List<User> findUsersCreatedAfter(Date date);
 
 ---
 
-## Q.41: What is CSRF protection?
+## Q.39: What is CSRF protection?
 Cross-Site Request Forgery protection prevents malicious websites from making unauthorized requests on behalf of authenticated users. It's enabled by default in Spring Security for stateful applications.
 
 ---
 
-## Q.42: What is CORS?
+## Q.40: What is CORS?
 Cross-Origin Resource Sharing allows web applications to make requests to different domains. It's configured to specify allowed origins, methods, and headers.
 
 ---
 
-## Q.43: What is @ConditionalOnProperty?
+## Q.41: What is @ConditionalOnProperty?
 Conditionally creates a bean based on the presence and value of a configuration property.
 
 **Example:**
@@ -894,7 +894,7 @@ EmailService emailService() {
 
 ---
 
-## Q.44: What is @ConditionalOnClass?
+## Q.42: What is @ConditionalOnClass?
 Conditionally creates a bean only if a specified class is present on the classpath.
 
 **Example:**
@@ -908,7 +908,7 @@ ExternalServiceClient externalServiceClient() {
 
 ---
 
-## Q.45: What is @EnableConfigurationProperties?
+## Q.43: What is @EnableConfigurationProperties?
 Enables binding of `@ConfigurationProperties` classes to external configuration.
 
 **Example:**
@@ -923,7 +923,7 @@ class MailConfiguration {}
 
 ---
 
-## Q.47: What is @Bean annotation?
+## Q.44: What is @Bean annotation?
 Indicates that a method produces a bean to be managed by the Spring container.
 
 **Example:**
@@ -939,7 +939,7 @@ class DatabaseConfig {
 
 ---
 
-## Q.48: What is @PostConstruct?
+## Q.45: What is @PostConstruct?
 Marks a method to be executed after dependency injection is complete. It's used for initialization logic.
 
 **Example:**
@@ -955,7 +955,7 @@ class CacheManager {
 
 ---
 
-## Q.49: What is @PreDestroy?
+## Q.46: What is @PreDestroy?
 Marks a method to be executed before the bean is destroyed. It's used for cleanup logic.
 
 **Example:**
@@ -970,7 +970,7 @@ class CacheManager {
 ```
 ---
 
-## Q.50: What is @ResponseBody?
+## Q.47: What is @ResponseBody?
 The `@ResponseBody` annotation in Spring Framework is used to indicate that the return value of a method should be directly serialized and sent as the HTTP response body, rather than being processed further by Spring's ModelAndView resolution process.
 
 When a method is annotated with `@ResponseBody`, it can produce a wide variety of responses, such as JSON, XML, or plain text, depending on the serialization mechanism you use (e.g., Jackson, Gson). This annotation can be used with various types of methods, including controller actions and service methods.
@@ -979,7 +979,7 @@ By using `@ResponseBody`, developers can create more efficient and flexible REST
 
 ---
 
-## Q.51: What is @ResponseStatus?
+## Q.48: What is @ResponseStatus?
 Maps an exception or controller method to an HTTP status code.
 
 **Example:**
