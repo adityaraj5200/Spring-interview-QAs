@@ -1350,14 +1350,3 @@ Functionally, both work the same — Spring Boot will load either. It’s just a
 
 ## Q.26: If both `application.properties` and `application.yml` are present, which one does Spring Boot use?
 Spring Boot supports both formats, but if both files are present in the same project, **`application.properties`** takes precedence over **`application.yml`**.
-
-
-## Q.27: 
-
-
-## Q.28: 
-
-
-## Q.29: 
-
-
